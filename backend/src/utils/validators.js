@@ -1,37 +1,37 @@
-class Validators {
-  static isEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+// Validación de contraseña según H.U. 001: mínimo 8 caracteres, 1 mayúscula, 1 número
+const validatePassword = (password) => {
+  if (!password || typeof password !== 'string') {
+    return { valid: false, message: 'Contraseña requerida' };
   }
 
-  static isValidPassword(password) {
-    return password && password.length >= 6;
+  if (password.length < 8) {
+    return { valid: false, message: 'Contraseña debe tener al menos 8 caracteres' };
   }
 
-  static isValidName(name) {
-    return name && name.trim().length >= 3;
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, message: 'Contraseña debe contener al menos una letra mayúscula' };
   }
 
-  static validateUser(userData) {
-    const errors = [];
-
-    if (!this.isValidName(userData.name)) {
-      errors.push('El nombre debe tener al menos 3 caracteres');
-    }
-
-    if (!this.isEmail(userData.email)) {
-      errors.push('El correo electrónico no es válido');
-    }
-
-    if (!this.isValidPassword(userData.password)) {
-      errors.push('La contraseña debe tener al menos 6 caracteres');
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, message: 'Contraseña debe contener al menos un número' };
   }
-}
 
-module.exports = Validators;
+  return { valid: true, message: 'Contraseña válida' };
+};
+
+// Validación de email
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Validación de nombre (no vacío, 2+ caracteres)
+const validateNombre = (nombre) => {
+  return nombre && typeof nombre === 'string' && nombre.trim().length >= 2;
+};
+
+module.exports = {
+  validatePassword,
+  validateEmail,
+  validateNombre,
+};
