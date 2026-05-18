@@ -7,12 +7,21 @@ class UserRepository {
 
   async create(user) {
     const pool = this.database.getPool();
-    const query = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
+    const query = `
+      INSERT INTO USUARIO (id, nombre, correo, contrasena, rol)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `;
 
     try {
-      const [result] = await pool.execute(query, [user.name, user.email, user.password]);
-      user.id = result.insertId;
-      return user;
+      const { rows } = await pool.query(query, [
+        user.id,
+        user.nombre || user.name,
+        user.correo || user.email,
+        user.contrasena || user.password,
+        user.rol || 'Estudiante',
+      ]);
+      return new User(rows[0]);
     } catch (error) {
       throw new Error(`Error al crear usuario: ${error.message}`);
     }
@@ -20,10 +29,10 @@ class UserRepository {
 
   async findById(id) {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM users WHERE id = ?';
+    const query = 'SELECT * FROM USUARIO WHERE id = $1';
 
     try {
-      const [rows] = await pool.execute(query, [id]);
+      const { rows } = await pool.query(query, [id]);
       return rows.length ? new User(rows[0]) : null;
     } catch (error) {
       throw new Error(`Error al obtener usuario: ${error.message}`);
@@ -32,10 +41,10 @@ class UserRepository {
 
   async findByEmail(email) {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM users WHERE email = ?';
+    const query = 'SELECT * FROM USUARIO WHERE correo = $1';
 
     try {
-      const [rows] = await pool.execute(query, [email]);
+      const { rows } = await pool.query(query, [email]);
       return rows.length ? new User(rows[0]) : null;
     } catch (error) {
       throw new Error(`Error al obtener usuario: ${error.message}`);
@@ -44,10 +53,10 @@ class UserRepository {
 
   async findAll() {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM users';
+    const query = 'SELECT * FROM USUARIO';
 
     try {
-      const [rows] = await pool.execute(query);
+      const { rows } = await pool.query(query);
       return rows.map(row => new User(row));
     } catch (error) {
       throw new Error(`Error al obtener usuarios: ${error.message}`);
@@ -56,11 +65,20 @@ class UserRepository {
 
   async update(id, userData) {
     const pool = this.database.getPool();
-    const query = 'UPDATE users SET name = ?, email = ?, updatedAt = NOW() WHERE id = ?';
+    const query = `
+      UPDATE USUARIO
+      SET nombre = $1, correo = $2
+      WHERE id = $3
+      RETURNING *
+    `;
 
     try {
-      const [result] = await pool.execute(query, [userData.name, userData.email, id]);
-      return result.affectedRows > 0;
+      const { rows } = await pool.query(query, [
+        userData.nombre || userData.name,
+        userData.correo || userData.email,
+        id,
+      ]);
+      return rows.length > 0;
     } catch (error) {
       throw new Error(`Error al actualizar usuario: ${error.message}`);
     }
@@ -68,11 +86,11 @@ class UserRepository {
 
   async delete(id) {
     const pool = this.database.getPool();
-    const query = 'DELETE FROM users WHERE id = ?';
+    const query = 'DELETE FROM USUARIO WHERE id = $1 RETURNING id';
 
     try {
-      const [result] = await pool.execute(query, [id]);
-      return result.affectedRows > 0;
+      const { rows } = await pool.query(query, [id]);
+      return rows.length > 0;
     } catch (error) {
       throw new Error(`Error al eliminar usuario: ${error.message}`);
     }
