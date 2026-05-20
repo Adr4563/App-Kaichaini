@@ -1342,3 +1342,6 @@ const handleResponderEjercicio = async (idEjercicio, respuesta) => {
 REACT_APP_API_URL=http://localhost:3000/api/v1
 REACT_APP_API_TIMEOUT=30000
 ```
+
+
+###### Si alguien lee esto tiene un chocolate gratis
