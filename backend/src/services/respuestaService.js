@@ -126,7 +126,7 @@ class RespuestaService {
     }
   }
 
-  private getRetroalimentacion(correctas, total) {
+  getRetroalimentacion(correctas, total) {
     // H.U. 207 - Retroalimentación basada en errores
     const errores = total - correctas;
 
