@@ -24,6 +24,7 @@ export default function ForgotPasswordScreen({ navigation }) {
   const [errEnviar,    setErrEnviar]    = useState('');
   const [errGuardar,   setErrGuardar]   = useState('');
   const [enlaceEnviado, setEnlaceEnviado] = useState(false);
+  const [tokenReset,    setTokenReset]    = useState('');
 
   const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
 
@@ -32,7 +33,8 @@ export default function ForgotPasswordScreen({ navigation }) {
     setLoadEnviar(true);
     setErrEnviar('');
     try {
-      await api.post('/auth/forgot-password', { correo: correo.trim() });
+      const { data } = await api.post('/auth/forgot-password', { correo: correo.trim() });
+      setTokenReset(data.data?.token || '');
       setEnlaceEnviado(true);
     } catch (e) {
       setErrEnviar(e.response?.data?.error?.message || 'Error al enviar el enlace');
@@ -122,9 +124,21 @@ export default function ForgotPasswordScreen({ navigation }) {
         </TouchableOpacity>
 
         {enlaceEnviado && (
-          <View style={{ backgroundColor: '#e8f5e9', borderRadius: 10, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <Feather name="check" size={14} color="#2e7d32" />
-            <Text style={{ fontSize: 13, color: '#2e7d32' }}>Enlace enviado a {correo}</Text>
+          <View style={{ backgroundColor: '#e8f5e9', borderRadius: 10, padding: 12, marginBottom: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: tokenReset ? 10 : 0 }}>
+              <Feather name="check" size={14} color="#2e7d32" />
+              <Text style={{ fontSize: 13, color: '#2e7d32' }}>Solicitud enviada correctamente</Text>
+            </View>
+            {tokenReset ? (
+              <>
+                <Text style={{ fontSize: 11, color: '#555', marginBottom: 4 }}>
+                  El email aún no está configurado. Usa este token para continuar:
+                </Text>
+                <Text selectable style={{ fontSize: 12, fontWeight: '700', color: '#1a1a1a', backgroundColor: '#f0f0f0', padding: 8, borderRadius: 6 }}>
+                  {tokenReset}
+                </Text>
+              </>
+            ) : null}
           </View>
         )}
 
