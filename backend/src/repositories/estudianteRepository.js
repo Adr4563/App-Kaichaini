@@ -163,6 +163,17 @@ class EstudianteRepository {
     }
   }
 
+  async findByResetToken(token) {
+    const pool = this.database.getPool();
+    const query = 'SELECT * FROM USUARIO WHERE "resetPasswordToken" = $1 AND rol = $2';
+    try {
+      const { rows } = await pool.query(query, [token, 'Estudiante']);
+      return rows.length ? new Estudiante(rows[0]) : null;
+    } catch (error) {
+      throw new Error(`Error al buscar token: ${error.message}`);
+    }
+  }
+
   async delete(id) {
     const pool = this.database.getPool();
     const query = 'DELETE FROM USUARIO WHERE id = $1 AND rol = $2 RETURNING id';
