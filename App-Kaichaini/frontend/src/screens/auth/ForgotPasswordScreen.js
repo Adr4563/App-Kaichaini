@@ -69,7 +69,7 @@ export default function ForgotPasswordScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Header */}
-      <View style={{ height: 56, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#eaeaea', gap: 16 }}>
+      <View style={{ height: 80, paddingHorizontal: 16, paddingTop: 24, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#eaeaea', gap: 16 }}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Feather name="arrow-left" size={22} color={C.dark} />
         </TouchableOpacity>
