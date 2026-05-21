@@ -11,10 +11,12 @@ import LoginScreen          from './src/screens/auth/LoginScreen';
 import ClassCodeScreen      from './src/screens/auth/ClassCodeScreen';
 import RegisterScreen       from './src/screens/auth/RegisterScreen';
 import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
-import HomeScreen      from './src/screens/student/HomeScreen';
-import ProgresoScreen  from './src/screens/student/ProgresoScreen';
-import RankingScreen   from './src/screens/student/RankingScreen';
-import PerfilScreen    from './src/screens/student/PerfilScreen';
+import HomeScreen               from './src/screens/student/HomeScreen';
+import ProgresoScreen           from './src/screens/student/ProgresoScreen';
+import RankingScreen            from './src/screens/student/RankingScreen';
+import PerfilScreen             from './src/screens/student/PerfilScreen';
+import PersonalizarPerfilScreen from './src/screens/student/PersonalizarPerfilScreen';
+import UnirseAClaseScreen       from './src/screens/student/UnirseAClaseScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab   = createBottomTabNavigator();
@@ -27,6 +29,17 @@ function AuthStack() {
       <Stack.Screen name="ClassCode"      component={ClassCodeScreen} />
       <Stack.Screen name="Register"       component={RegisterScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// ── Stack del tab Perfil ──────────────────────────────────────────────────────
+function PerfilStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="PerfilMain"        component={PerfilScreen} />
+      <Stack.Screen name="PersonalizarPerfil" component={PersonalizarPerfilScreen} />
+      <Stack.Screen name="UnirseAClase"      component={UnirseAClaseScreen} />
     </Stack.Navigator>
   );
 }
@@ -75,7 +88,7 @@ function AppTabs() {
       <Tab.Screen name="Inicio"   component={HomeScreen} />
       <Tab.Screen name="Progreso" component={ProgresoScreen} />
       <Tab.Screen name="Ranking"  component={RankingScreen} />
-      <Tab.Screen name="Perfil"   component={PerfilScreen} />
+      <Tab.Screen name="Perfil"   component={PerfilStack} />
     </Tab.Navigator>
   );
 }
