@@ -82,7 +82,7 @@ export default function PersonalizarPerfilScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
 
       {/* Header */}
-      <View style={{ height: 56, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#eaeaea' }}>
+      <View style={{ height: 80, paddingHorizontal: 16, paddingTop: 24, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#eaeaea' }}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 16 }}>
           <Feather name="arrow-left" size={22} color="#1a1a1a" />
         </TouchableOpacity>
