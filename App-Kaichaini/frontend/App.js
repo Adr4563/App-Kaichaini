@@ -7,9 +7,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
-import LoginScreen     from './src/screens/auth/LoginScreen';
-import ClassCodeScreen from './src/screens/auth/ClassCodeScreen';
-import RegisterScreen  from './src/screens/auth/RegisterScreen';
+import LoginScreen          from './src/screens/auth/LoginScreen';
+import ClassCodeScreen      from './src/screens/auth/ClassCodeScreen';
+import RegisterScreen       from './src/screens/auth/RegisterScreen';
+import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
+import ResetPasswordScreen  from './src/screens/auth/ResetPasswordScreen';
 import HomeScreen      from './src/screens/student/HomeScreen';
 import ProgresoScreen  from './src/screens/student/ProgresoScreen';
 import RankingScreen   from './src/screens/student/RankingScreen';
@@ -22,9 +24,11 @@ const Tab   = createBottomTabNavigator();
 function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login"     component={LoginScreen} />
-      <Stack.Screen name="ClassCode" component={ClassCodeScreen} />
-      <Stack.Screen name="Register"  component={RegisterScreen} />
+      <Stack.Screen name="Login"          component={LoginScreen} />
+      <Stack.Screen name="ClassCode"      component={ClassCodeScreen} />
+      <Stack.Screen name="Register"       component={RegisterScreen} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <Stack.Screen name="ResetPassword"  component={ResetPasswordScreen} />
     </Stack.Navigator>
   );
 }
