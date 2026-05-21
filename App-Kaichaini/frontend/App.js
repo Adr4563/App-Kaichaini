@@ -11,7 +11,6 @@ import LoginScreen          from './src/screens/auth/LoginScreen';
 import ClassCodeScreen      from './src/screens/auth/ClassCodeScreen';
 import RegisterScreen       from './src/screens/auth/RegisterScreen';
 import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
-import ResetPasswordScreen  from './src/screens/auth/ResetPasswordScreen';
 import HomeScreen      from './src/screens/student/HomeScreen';
 import ProgresoScreen  from './src/screens/student/ProgresoScreen';
 import RankingScreen   from './src/screens/student/RankingScreen';
@@ -28,7 +27,6 @@ function AuthStack() {
       <Stack.Screen name="ClassCode"      component={ClassCodeScreen} />
       <Stack.Screen name="Register"       component={RegisterScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-      <Stack.Screen name="ResetPassword"  component={ResetPasswordScreen} />
     </Stack.Navigator>
   );
 }

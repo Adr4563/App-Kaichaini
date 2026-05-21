@@ -5,94 +5,184 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import api from '../../services/api';
-import { s, C } from '../../styles/screens/ForgotPasswordScreen.styles';
+
+const C = {
+  green: '#1b5e20',
+  dark:  '#1a1a1a',
+  gray:  '#666',
+  white: '#ffffff',
+  error: '#c62828',
+};
 
 export default function ForgotPasswordScreen({ navigation }) {
-  const [correo,   setCorreo]   = useState('');
-  const [cargando, setCargando] = useState(false);
-  const [error,    setError]    = useState('');
-  const [enviado,  setEnviado]  = useState(false);
+  const [correo,       setCorreo]       = useState('');
+  const [newPass,      setNewPass]      = useState('');
+  const [confirmPass,  setConfirmPass]  = useState('');
+  const [token,        setToken]        = useState('');
+  const [loadEnviar,   setLoadEnviar]   = useState(false);
+  const [loadGuardar,  setLoadGuardar]  = useState(false);
+  const [errEnviar,    setErrEnviar]    = useState('');
+  const [errGuardar,   setErrGuardar]   = useState('');
+  const [enlaceEnviado, setEnlaceEnviado] = useState(false);
 
   const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
 
   const handleEnviar = async () => {
-    if (!correoValido) { setError('Ingresa un correo válido'); return; }
-    setCargando(true);
-    setError('');
+    if (!correoValido) { setErrEnviar('Ingresa un correo válido'); return; }
+    setLoadEnviar(true);
+    setErrEnviar('');
     try {
       await api.post('/auth/forgot-password', { correo: correo.trim() });
-      setEnviado(true);
+      setEnlaceEnviado(true);
     } catch (e) {
-      const msg = e.response?.data?.error?.message || 'Error al enviar el enlace';
-      setError(msg);
+      setErrEnviar(e.response?.data?.error?.message || 'Error al enviar el enlace');
     } finally {
-      setCargando(false);
+      setLoadEnviar(false);
+    }
+  };
+
+  const handleGuardar = async () => {
+    if (!token.trim())         { setErrGuardar('Pega el token del enlace recibido'); return; }
+    if (newPass.length < 8)    { setErrGuardar('Mínimo 8 caracteres'); return; }
+    if (newPass !== confirmPass){ setErrGuardar('Las contraseñas no coinciden'); return; }
+    setLoadGuardar(true);
+    setErrGuardar('');
+    try {
+      await api.post('/auth/reset-password', {
+        token:           token.trim(),
+        newPassword:     newPass,
+        confirmPassword: confirmPass,
+      });
+      navigation.navigate('Login');
+    } catch (e) {
+      setErrGuardar(e.response?.data?.error?.message || 'Token inválido o expirado');
+    } finally {
+      setLoadGuardar(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView style={s.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={s.header}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: C.white }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      {/* Header */}
+      <View style={{ height: 56, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#eaeaea', gap: 16 }}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Feather name="arrow-left" size={22} color={C.textDark} />
+          <Feather name="arrow-left" size={22} color={C.dark} />
         </TouchableOpacity>
-        <Text style={s.headerTitle}>Recuperar contraseña</Text>
+        <Text style={{ fontSize: 18, fontWeight: '700', color: C.dark }}>Recuperar contraseña</Text>
       </View>
 
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
 
-        {!enviado ? (
-          <>
-            <Text style={s.description}>
-              Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
-              El enlace tiene vigencia de 1 hora.
-            </Text>
+        {/* Icono */}
+        <View style={{ width: 48, height: 48, backgroundColor: '#f5f5f5', borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
+          <Feather name="lock" size={22} color={C.dark} />
+        </View>
 
-            <View style={s.formGroup}>
-              <Text style={s.label}>Correo</Text>
-              <View style={s.inputWrapper}>
-                <TextInput
-                  style={s.input}
-                  value={correo}
-                  onChangeText={(t) => { setCorreo(t); setError(''); }}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                {correoValido && <Text style={s.checkIcon}>✓</Text>}
-              </View>
-            </View>
+        <Text style={{ fontSize: 20, fontWeight: '700', color: C.dark, marginBottom: 8 }}>
+          Te enviaremos un enlace
+        </Text>
+        <Text style={{ fontSize: 13, color: C.gray, lineHeight: 20, marginBottom: 24 }}>
+          Ingresa el correo con el que te registraste. El enlace dura{' '}
+          <Text style={{ fontWeight: '700', color: C.dark }}>1 hora</Text>.
+        </Text>
 
-            {error ? <Text style={s.errorText}>{error}</Text> : null}
+        {/* Correo */}
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ fontSize: 12, color: C.gray, marginBottom: 6 }}>Correo</Text>
+          <View style={{ position: 'relative', justifyContent: 'center' }}>
+            <TextInput
+              style={{ paddingVertical: 14, paddingHorizontal: 16, paddingRight: 40, borderWidth: 1, borderColor: '#333', borderRadius: 12, fontSize: 15, color: C.dark }}
+              value={correo}
+              onChangeText={t => { setCorreo(t); setErrEnviar(''); }}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            {correoValido && (
+              <Text style={{ position: 'absolute', right: 16, color: '#2e7d32', fontSize: 14 }}>✓</Text>
+            )}
+          </View>
+        </View>
 
-            <TouchableOpacity
-              style={[s.btnPrimary, (!correoValido || cargando) && s.btnDisabled]}
-              onPress={handleEnviar}
-              disabled={!correoValido || cargando}
-            >
-              {cargando
-                ? <ActivityIndicator color={C.white} />
-                : <Text style={s.btnPrimaryText}>Enviar enlace</Text>
-              }
-            </TouchableOpacity>
-          </>
-        ) : (
-          <View style={s.successBox}>
-            <Feather name="mail" size={44} color={C.green} />
-            <Text style={[s.successTitle, { marginTop: 16 }]}>Enlace enviado</Text>
-            <Text style={s.successText}>
-              Revisa tu correo{' '}
-              <Text style={s.successEmail}>{correo}</Text>.{'\n'}
-              El enlace expira en 1 hora.
-            </Text>
-            <TouchableOpacity
-              style={s.resetLinkBtn}
-              onPress={() => navigation.navigate('ResetPassword')}
-            >
-              <Text style={s.resetLinkText}>Ya tengo el token → Restablecer contraseña</Text>
-            </TouchableOpacity>
+        {errEnviar ? <Text style={{ color: C.error, fontSize: 13, marginBottom: 10 }}>{errEnviar}</Text> : null}
+
+        {/* Botón enviar */}
+        <TouchableOpacity
+          style={{ backgroundColor: C.green, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginBottom: 24, opacity: (!correoValido || loadEnviar) ? 0.5 : 1 }}
+          onPress={handleEnviar}
+          disabled={!correoValido || loadEnviar}
+        >
+          {loadEnviar
+            ? <ActivityIndicator color={C.white} />
+            : <Text style={{ color: C.white, fontSize: 16, fontWeight: '600' }}>Enviar enlace</Text>
+          }
+        </TouchableOpacity>
+
+        {enlaceEnviado && (
+          <View style={{ backgroundColor: '#e8f5e9', borderRadius: 10, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Feather name="check" size={14} color="#2e7d32" />
+            <Text style={{ fontSize: 13, color: '#2e7d32' }}>Enlace enviado a {correo}</Text>
           </View>
         )}
+
+        {/* Divider */}
+        <View style={{ height: 1, backgroundColor: '#eaeaea', marginBottom: 24 }} />
+
+        {/* Sub-form para nueva contraseña */}
+        <View style={{ borderWidth: 1, borderColor: '#999', borderRadius: 16, padding: 16 }}>
+          <Text style={{ fontSize: 12, color: '#555', marginBottom: 16 }}>Después del clic en el correo:</Text>
+
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, color: C.gray, marginBottom: 6 }}>Token del enlace</Text>
+            <TextInput
+              style={{ paddingVertical: 14, paddingHorizontal: 16, borderWidth: 1, borderColor: '#333', borderRadius: 12, fontSize: 15, color: C.dark }}
+              value={token}
+              onChangeText={t => { setToken(t); setErrGuardar(''); }}
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder="Pega el token aquí"
+              placeholderTextColor="#bbb"
+            />
+          </View>
+
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, color: C.gray, marginBottom: 6 }}>Nueva contraseña</Text>
+            <TextInput
+              style={{ paddingVertical: 14, paddingHorizontal: 16, borderWidth: 1, borderColor: '#333', borderRadius: 12, fontSize: 15, color: C.dark }}
+              value={newPass}
+              onChangeText={setNewPass}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 12, color: C.gray, marginBottom: 6 }}>Repetir contraseña</Text>
+            <TextInput
+              style={{ paddingVertical: 14, paddingHorizontal: 16, borderWidth: 1, borderColor: '#333', borderRadius: 12, fontSize: 15, color: C.dark }}
+              value={confirmPass}
+              onChangeText={setConfirmPass}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+          </View>
+
+          {errGuardar ? <Text style={{ color: C.error, fontSize: 13, marginBottom: 10 }}>{errGuardar}</Text> : null}
+
+          <TouchableOpacity
+            style={{ backgroundColor: C.dark, borderRadius: 12, paddingVertical: 14, alignItems: 'center', opacity: loadGuardar ? 0.5 : 1 }}
+            onPress={handleGuardar}
+            disabled={loadGuardar}
+          >
+            {loadGuardar
+              ? <ActivityIndicator color={C.white} />
+              : <Text style={{ color: C.white, fontSize: 16, fontWeight: '600' }}>Guardar</Text>
+            }
+          </TouchableOpacity>
+        </View>
 
       </ScrollView>
     </KeyboardAvoidingView>
