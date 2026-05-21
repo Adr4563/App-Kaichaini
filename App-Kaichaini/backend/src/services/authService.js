@@ -311,22 +311,38 @@ class AuthService {
 
   async resetPassword(token, newPassword) {
     // H.U. 008 - Recuperar Contraseña
-    // Validar contraseña
     const passwordValidation = validatePassword(newPassword);
     if (!passwordValidation.valid) {
       throw new Error(passwordValidation.message);
     }
 
-    // Buscar usuario por token
-    // Nota: En producción, implementar método findByResetToken en repositories
-    // Por ahora, hacer búsqueda manual (esto debería optimizarse)
-    let usuario = null;
-    let isEstudiante = true;
-    let repository = this.estudianteRepository;
+    // Buscar por token en estudiantes y docentes
+    let usuario = await this.estudianteRepository.findByResetToken(token);
+    let isEstudiante = !!usuario;
 
-    // Búsqueda simple: iterar estudiantes (NOT OPTIMAL - for demo only)
-    // En producción, implementar query paramétrica en BD
-    throw new Error('resetPassword: Método debe ser implementado con query paramétrica en BD');
+    if (!usuario) {
+      usuario = await this.docenteRepository.findByResetToken(token);
+    }
+
+    if (!usuario) {
+      throw new Error('Token inválido o expirado');
+    }
+
+    // Verificar que el token no haya expirado
+    if (usuario.resetPasswordExpires && new Date(usuario.resetPasswordExpires) < new Date()) {
+      throw new Error('El token ha expirado. Solicita uno nuevo');
+    }
+
+    // Actualizar contraseña y limpiar token
+    const hashedPassword = await hashPassword(newPassword);
+    const repository = isEstudiante ? this.estudianteRepository : this.docenteRepository;
+    await repository.update(usuario.id, {
+      contrasena: hashedPassword,
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+    });
+
+    return true;
   }
 }
 
