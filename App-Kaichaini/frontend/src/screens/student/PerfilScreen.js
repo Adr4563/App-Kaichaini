@@ -73,7 +73,7 @@ export default function PerfilScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
 
       {/* Header */}
-      <View style={{ height: 56, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#eaeaea' }}>
+      <View style={{ height: 80, paddingHorizontal: 16, paddingTop: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#eaeaea' }}>
         <Text style={{ fontSize: 18, fontWeight: '700', color: '#1a1a1a' }}>Mi perfil</Text>
         <TouchableOpacity onPress={() => setShowConfig(true)}>
           <Feather name="settings" size={20} color="#1a1a1a" />
