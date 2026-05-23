@@ -15,8 +15,9 @@ class MaterialService {
 
   async buscar(query, idClase) {
     // H.U. 408 - Buscar material por nombre
-    if (!query || query.trim().length < 2) {
-      throw new Error('Término de búsqueda debe tener al menos 2 caracteres');
+    // Acepta desde 1 carácter; prioriza exactas sobre parciales (ordenado en repository)
+    if (!query || query.trim().length < 1) {
+      throw new Error('Término de búsqueda requerido');
     }
 
     return await this.materialRepository.buscarPorNombre(query.trim(), idClase);
