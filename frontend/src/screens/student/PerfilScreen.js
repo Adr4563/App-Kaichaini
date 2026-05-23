@@ -123,6 +123,62 @@ export default function PerfilScreen({ navigation }) {
           }
         </View>
 
+        {/* Acceso rápido */}
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: '#1a1a1a', marginBottom: 12 }}>
+            Mi clase
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Silabo')}
+              style={{
+                flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12,
+                borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 14,
+                padding: 14,
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={{
+                width: 40, height: 40, borderRadius: 10,
+                backgroundColor: '#f5f5f5',
+                justifyContent: 'center', alignItems: 'center',
+              }}>
+                <Text style={{ fontSize: 20 }}>📄</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#1a1a1a' }}>Sílabo</Text>
+                <Text style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Ver documento</Text>
+              </View>
+              <Feather name="chevron-right" size={16} color="#bbb" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Material')}
+              style={{
+                flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12,
+                borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 14,
+                padding: 14,
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={{
+                width: 40, height: 40, borderRadius: 10,
+                backgroundColor: '#f5f5f5',
+                justifyContent: 'center', alignItems: 'center',
+              }}>
+                <Text style={{ fontSize: 20 }}>📚</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#1a1a1a' }}>Material</Text>
+                <Text style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Archivos y PDFs</Text>
+              </View>
+              <Feather name="chevron-right" size={16} color="#bbb" />
+            </TouchableOpacity>
+
+          </View>
+        </View>
+
         {/* Insignias */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <Text style={{ fontSize: 15, fontWeight: '700', color: '#1a1a1a' }}>Mis insignias</Text>
