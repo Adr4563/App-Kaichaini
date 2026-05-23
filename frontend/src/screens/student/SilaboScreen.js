@@ -188,9 +188,29 @@ export default function SilaboScreen({ navigation }) {
               </Text>
               <View style={{ padding: 15 }}>
                 {silabo.contenido ? (
-                  <Text style={{ fontSize: 12, color: '#444', lineHeight: 18 }} numberOfLines={8}>
-                    {silabo.contenido}
-                  </Text>
+                  silabo.contenido.split('\n').filter(l => l.trim()).map((linea, i) => (
+                    <View
+                      key={i}
+                      style={{
+                        flexDirection: 'row', alignItems: 'flex-start',
+                        marginBottom: 10,
+                      }}
+                    >
+                      <View style={{
+                        width: 22, height: 22, borderRadius: 11,
+                        backgroundColor: '#1a1a1a', justifyContent: 'center',
+                        alignItems: 'center', marginRight: 10, marginTop: 1,
+                        flexShrink: 0,
+                      }}>
+                        <Text style={{ fontSize: 10, color: '#fff', fontWeight: '700' }}>
+                          {i + 1}
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 12, color: '#333', lineHeight: 20, flex: 1 }}>
+                        {linea.replace(/^Unidad \d+:\s*/i, '')}
+                      </Text>
+                    </View>
+                  ))
                 ) : (
                   [0.7, 0.85, 0.6, 0.8, 0.65, 0.75].map((w, i) => (
                     <View
