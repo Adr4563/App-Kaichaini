@@ -7,18 +7,28 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
-import LoginScreen     from './src/screens/auth/LoginScreen';
-import ClassCodeScreen from './src/screens/auth/ClassCodeScreen';
-import RegisterScreen  from './src/screens/auth/RegisterScreen';
-import HomeScreen      from './src/screens/student/HomeScreen';
-import ProgresoScreen  from './src/screens/student/ProgresoScreen';
-import RankingScreen   from './src/screens/student/RankingScreen';
-import PerfilScreen    from './src/screens/student/PerfilScreen';
+
+// Auth screens
+import LoginScreen            from './src/screens/auth/LoginScreen';
+import ClassCodeScreen        from './src/screens/auth/ClassCodeScreen';
+import RegisterScreen         from './src/screens/auth/RegisterScreen';
+
+// Student screens (tabs)
+import HomeScreen             from './src/screens/student/HomeScreen';
+import ProgresoScreen         from './src/screens/student/ProgresoScreen';
+import RankingScreen          from './src/screens/student/RankingScreen';
+import PerfilScreen           from './src/screens/student/PerfilScreen';
+
+// Student screens (stack / modal)
+import PersonalizarPerfilScreen from './src/screens/student/PersonalizarPerfilScreen';
+import UnirseAClaseScreen       from './src/screens/student/UnirseAClaseScreen';
+import SilaboScreen             from './src/screens/student/SilaboScreen';
+import MaterialScreen           from './src/screens/student/MaterialScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab   = createBottomTabNavigator();
 
-// ── Auth (no autenticado) ─────────────────────────────────────────────────────
+// ── Auth (no autenticado) ──────────────────────────────────────────────────────
 function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -29,7 +39,7 @@ function AuthStack() {
   );
 }
 
-// ── App (autenticado) — barra inferior ────────────────────────────────────────
+// ── Tabs inferiores ────────────────────────────────────────────────────────────
 function AppTabs() {
   return (
     <Tab.Navigator
@@ -59,7 +69,7 @@ function AppTabs() {
           shadowOpacity: 0.03,
           shadowRadius: 12,
         },
-        tabBarIcon: ({ color, size }) => {
+        tabBarIcon: ({ color }) => {
           const icons = {
             Inicio:   'home',
             Progreso: 'bar-chart-2',
@@ -78,7 +88,20 @@ function AppTabs() {
   );
 }
 
-// ── Wrapper que detecta actividad del usuario ─────────────────────────────────
+// ── Stack principal (tabs + pantallas de detalle) ──────────────────────────────
+function AppStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Tabs"               component={AppTabs} />
+      <Stack.Screen name="PersonalizarPerfil" component={PersonalizarPerfilScreen} />
+      <Stack.Screen name="UnirseAClase"       component={UnirseAClaseScreen} />
+      <Stack.Screen name="Silabo"             component={SilaboScreen} />
+      <Stack.Screen name="Material"           component={MaterialScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// ── Wrapper de inactividad ─────────────────────────────────────────────────────
 function ActivityWrapper({ children }) {
   const { resetInactivityTimer } = useAuth();
   return (
@@ -88,7 +111,7 @@ function ActivityWrapper({ children }) {
   );
 }
 
-// ── Root ──────────────────────────────────────────────────────────────────────
+// ── Root ───────────────────────────────────────────────────────────────────────
 function RootNavigator() {
   const { token, loading } = useAuth();
 
@@ -101,7 +124,7 @@ function RootNavigator() {
   }
 
   return token
-    ? <ActivityWrapper><AppTabs /></ActivityWrapper>
+    ? <ActivityWrapper><AppStack /></ActivityWrapper>
     : <AuthStack />;
 }
 
