@@ -15,11 +15,15 @@ const getExtension = (url, tipo) => {
   return ['PDF', 'DOC', 'DOCX'].includes(ext) ? ext : 'DOC';
 };
 
-/** Separa resultados en exactos y parciales, ordenados alfabéticamente */
+/**
+ * Separa resultados en exactos y parciales, ordenados alfabéticamente.
+ * - Exacto  : nombre completo igual a la query (sin distinción de mayúsculas)
+ * - Parcial : nombre contiene la query pero no es igual
+ */
 const separar = (items, query) => {
   if (!query.trim()) return { exactos: [], parciales: [], todos: items };
   const q = query.toLowerCase().trim();
-  const exactos  = items
+  const exactos   = items
     .filter(m => m.nombre.toLowerCase() === q)
     .sort((a, b) => a.nombre.localeCompare(b.nombre));
   const parciales = items
@@ -30,12 +34,12 @@ const separar = (items, query) => {
 
 /* ── componente ───────────────────────────────────────────────────────────── */
 export default function MaterialScreen({ navigation }) {
-  const [clases,          setClases]          = useState([]);
-  const [tabActivo,       setTabActivo]       = useState(0);
-  const [material,        setMaterial]        = useState([]);
-  const [busqueda,        setBusqueda]        = useState('');
-  const [cargando,        setCargando]        = useState(true);
-  const [cargandoMat,     setCargandoMat]     = useState(false);
+  const [clases,      setClases]      = useState([]);
+  const [tabActivo,   setTabActivo]   = useState(0);
+  const [material,    setMaterial]    = useState([]);
+  const [busqueda,    setBusqueda]    = useState('');
+  const [cargando,    setCargando]    = useState(true);
+  const [cargandoMat, setCargandoMat] = useState(false);
   const debounceRef = useRef(null);
 
   /* ── fetch clases ─────────────────────────────────────────────────────── */
@@ -92,9 +96,15 @@ export default function MaterialScreen({ navigation }) {
     }, 400);
   };
 
+  const limpiarBusqueda = () => {
+    setBusqueda('');
+    clearTimeout(debounceRef.current);
+    if (clases[tabActivo]) cargarMaterial(clases[tabActivo].id);
+  };
+
   /* ── render de tarjeta de documento ──────────────────────────────────── */
   const renderDoc = (item) => {
-    const ext   = getExtension(item.url, item.tipo);
+    const ext   = getExtension(item.archivoUrl, item.tipo);
     const isPDF = ext === 'PDF';
     return (
       <TouchableOpacity
@@ -104,7 +114,7 @@ export default function MaterialScreen({ navigation }) {
           borderWidth: 1, borderColor: '#e0e0e0',
           borderRadius: 10, padding: 12, marginBottom: 10,
         }}
-        onPress={() => item.url && Linking.openURL(item.url)}
+        onPress={() => item.archivoUrl && Linking.openURL(item.archivoUrl)}
         activeOpacity={0.7}
       >
         <View style={{
@@ -132,6 +142,29 @@ export default function MaterialScreen({ navigation }) {
     );
   };
 
+  /* ── etiqueta de sección ──────────────────────────────────────────────── */
+  const renderEtiqueta = (texto, cantidad) => (
+    <View style={{
+      flexDirection: 'row', alignItems: 'center',
+      justifyContent: 'space-between', marginBottom: 10,
+    }}>
+      <Text style={{
+        fontSize: 10, color: '#999', letterSpacing: 1,
+        textTransform: 'uppercase', fontWeight: '600',
+      }}>
+        {texto}
+      </Text>
+      <View style={{
+        backgroundColor: '#f0f0f0', borderRadius: 10,
+        paddingHorizontal: 8, paddingVertical: 2,
+      }}>
+        <Text style={{ fontSize: 11, color: '#666', fontWeight: '600' }}>
+          {cantidad}
+        </Text>
+      </View>
+    </View>
+  );
+
   /* ── loading inicial ──────────────────────────────────────────────────── */
   if (cargando) {
     return (
@@ -143,6 +176,7 @@ export default function MaterialScreen({ navigation }) {
 
   const { exactos, parciales, todos } = separar(material, busqueda);
   const totalResultados = busqueda.trim() ? exactos.length + parciales.length : 0;
+  const hayBusqueda     = busqueda.trim().length > 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -197,91 +231,78 @@ export default function MaterialScreen({ navigation }) {
         {/* ── Buscador ─────────────────────────────────────────────────────── */}
         <View style={{
           flexDirection: 'row', alignItems: 'center',
-          borderWidth: 1, borderColor: '#666',
-          borderRadius: 12, padding: 12, marginBottom: 25,
+          borderWidth: 1,
+          borderColor: hayBusqueda ? '#1a1a1a' : '#666',
+          borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10,
+          marginBottom: 25,
         }}>
-          <Feather name="search" size={16} color="#666" style={{ marginRight: 10 }} />
+          <Feather name="search" size={16} color={hayBusqueda ? '#1a1a1a' : '#999'} style={{ marginRight: 10 }} />
           <TextInput
             style={{ flex: 1, fontSize: 14, color: '#1a1a1a' }}
-            placeholder="Buscar material..."
+            placeholder="Buscar por nombre del archivo..."
             placeholderTextColor="#999"
             value={busqueda}
             onChangeText={handleBusqueda}
           />
-          {busqueda.length > 0 && (
-            <Text style={{ fontSize: 12, color: '#999' }}>
-              {totalResultados} resultado{totalResultados !== 1 ? 's' : ''}
-            </Text>
+          {hayBusqueda && (
+            <TouchableOpacity onPress={limpiarBusqueda} style={{ paddingLeft: 8 }}>
+              <Feather name="x" size={16} color="#999" />
+            </TouchableOpacity>
           )}
         </View>
 
         {/* ── Contenido ────────────────────────────────────────────────────── */}
         {cargandoMat ? (
           <ActivityIndicator color="#1a1a1a" style={{ marginVertical: 20 }} />
-        ) : busqueda.trim() ? (
-          /* Resultados de búsqueda con priorización exacta > parcial */
+
+        ) : hayBusqueda ? (
+          /* ── Resultados de búsqueda: exactas primero, parciales después ── */
           exactos.length === 0 && parciales.length === 0 ? (
             <View style={{ alignItems: 'center', paddingVertical: 50 }}>
               <Text style={{ fontSize: 36, marginBottom: 12 }}>🔍</Text>
               <Text style={{ fontSize: 15, fontWeight: '700', color: '#1a1a1a', marginBottom: 6 }}>
                 Sin resultados
               </Text>
-              <Text style={{ fontSize: 13, color: '#888', textAlign: 'center' }}>
-                No se encontro material con ese nombre.
+              <Text style={{ fontSize: 13, color: '#888', textAlign: 'center', lineHeight: 20 }}>
+                No se encontró material con ese nombre.{'\n'}Intenta con otra palabra clave.
               </Text>
             </View>
           ) : (
             <>
               {exactos.length > 0 && (
-                <>
-                  <Text style={{
-                    fontSize: 10, color: '#999', letterSpacing: 1,
-                    textTransform: 'uppercase', fontWeight: '600', marginBottom: 10,
-                  }}>
-                    COINCIDENCIA EXACTA
-                  </Text>
+                <View style={{ marginBottom: parciales.length > 0 ? 20 : 0 }}>
+                  {renderEtiqueta('Coincidencia exacta', exactos.length)}
                   {exactos.map(renderDoc)}
-                </>
+                </View>
               )}
               {parciales.length > 0 && (
-                <>
-                  <Text style={{
-                    fontSize: 10, color: '#999', letterSpacing: 1,
-                    textTransform: 'uppercase', fontWeight: '600',
-                    marginBottom: 10,
-                    marginTop: exactos.length > 0 ? 16 : 0,
-                  }}>
-                    COINCIDENCIA PARCIAL
-                  </Text>
+                <View>
+                  {renderEtiqueta('Coincidencia parcial', parciales.length)}
                   {parciales.map(renderDoc)}
-                </>
+                </View>
               )}
             </>
           )
+
         ) : (
-          /* Lista completa sin búsqueda */
+          /* ── Lista completa sin búsqueda ─────────────────────────────── */
           material.length === 0 ? (
             <View style={{ alignItems: 'center', paddingVertical: 60 }}>
               <Text style={{ fontSize: 48, marginBottom: 15 }}>📭</Text>
               <Text style={{ fontSize: 16, fontWeight: '700', color: '#1a1a1a', marginBottom: 8 }}>
-                Sin material aun
+                Sin material aún
               </Text>
               <Text style={{
                 fontSize: 13, color: '#888',
                 textAlign: 'center', maxWidth: 250, lineHeight: 20,
               }}>
-                Tu docente aun no ha subido material para esta clase.
+                Tu docente aún no ha subido material para esta clase.
               </Text>
             </View>
           ) : (
             <>
-              <Text style={{
-                fontSize: 10, color: '#999', letterSpacing: 1,
-                textTransform: 'uppercase', fontWeight: '600', marginBottom: 10,
-              }}>
-                TODO EL MATERIAL
-              </Text>
-              {material.map(renderDoc)}
+              {renderEtiqueta('Todo el material', material.length)}
+              {todos.length > 0 ? todos.map(renderDoc) : material.map(renderDoc)}
             </>
           )
         )}
