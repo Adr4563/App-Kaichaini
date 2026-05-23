@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
   const { usuario } = useAuth();
 
   return (
@@ -14,7 +14,21 @@ export default function HomeScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', paddingHorizontal: 24 },
-  title:     { fontSize: 24, fontWeight: '800', color: '#111', marginBottom: 8 },
-  subtitle:  { fontSize: 15, color: '#555' },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#111',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#555',
+  },
 });
