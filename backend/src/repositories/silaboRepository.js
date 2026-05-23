@@ -11,6 +11,7 @@ class SilaboRepository {
       SELECT id,
              idclase      AS "idClase",
              archivourl   AS "archivoUrl",
+             contenido,
              fechasubida  AS "fechaSubida"
       FROM silabo
       WHERE idclase = $1

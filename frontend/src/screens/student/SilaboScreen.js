@@ -67,7 +67,7 @@ export default function SilaboScreen({ navigation }) {
   }
 
   const claseActiva = clases[tabActivo];
-  const ext = silabo ? getExtension(silabo.url, silabo.tipo) : 'PDF';
+  const ext = silabo ? getExtension(silabo.archivoUrl, silabo.tipo) : 'PDF';
   const isPDF = ext === 'PDF';
 
   return (
@@ -148,7 +148,7 @@ export default function SilaboScreen({ navigation }) {
                 borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 12,
                 padding: 12, marginBottom: 16,
               }}
-              onPress={() => silabo.url && Linking.openURL(silabo.url)}
+              onPress={() => silabo.archivoUrl && Linking.openURL(silabo.archivoUrl)}
               activeOpacity={0.7}
             >
               <View style={{
