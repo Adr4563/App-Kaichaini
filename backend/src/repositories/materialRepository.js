@@ -7,7 +7,16 @@ class MaterialRepository {
 
   async findByClase(idClase) {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM MATERIAL WHERE "idClase" = $1';
+    const query = `
+      SELECT id,
+             idclase    AS "idClase",
+             idmodulo   AS "idModulo",
+             nombre,
+             archivourl AS "archivoUrl",
+             tipo
+      FROM material
+      WHERE idclase = $1
+    `;
 
     try {
       const { rows } = await pool.query(query, [idClase]);
@@ -19,7 +28,16 @@ class MaterialRepository {
 
   async findByModulo(idModulo) {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM MATERIAL WHERE "idModulo" = $1';
+    const query = `
+      SELECT id,
+             idclase    AS "idClase",
+             idmodulo   AS "idModulo",
+             nombre,
+             archivourl AS "archivoUrl",
+             tipo
+      FROM material
+      WHERE idmodulo = $1
+    `;
 
     try {
       const { rows } = await pool.query(query, [idModulo]);
@@ -33,8 +51,14 @@ class MaterialRepository {
     // H.U. 408 - Buscar material por nombre
     const pool = this.database.getPool();
     const sql = `
-      SELECT * FROM MATERIAL
-      WHERE "idClase" = $1 AND nombre ILIKE $2
+      SELECT id,
+             idclase    AS "idClase",
+             idmodulo   AS "idModulo",
+             nombre,
+             archivourl AS "archivoUrl",
+             tipo
+      FROM material
+      WHERE idclase = $1 AND nombre ILIKE $2
       ORDER BY nombre ASC
     `;
 

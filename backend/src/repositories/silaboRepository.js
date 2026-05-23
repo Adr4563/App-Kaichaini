@@ -7,7 +7,14 @@ class SilaboRepository {
 
   async findByClase(idClase) {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM SILABO WHERE "idClase" = $1';
+    const query = `
+      SELECT id,
+             idclase      AS "idClase",
+             archivourl   AS "archivoUrl",
+             fechasubida  AS "fechaSubida"
+      FROM silabo
+      WHERE idclase = $1
+    `;
 
     try {
       const { rows } = await pool.query(query, [idClase]);
