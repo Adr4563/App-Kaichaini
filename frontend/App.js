@@ -12,9 +12,10 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import LoginScreen            from './src/screens/auth/LoginScreen';
 import ClassCodeScreen        from './src/screens/auth/ClassCodeScreen';
 import RegisterScreen         from './src/screens/auth/RegisterScreen';
+import ForgotPasswordScreen   from './src/screens/auth/ForgotPasswordScreen';
 
 // Student screens (tabs)
-import HomeScreen             from './src/screens/student/HomeScreen';
+import MapaScreen             from './src/screens/student/MapaScreen';   // H.U. 117, 123, 302
 import ProgresoScreen         from './src/screens/student/ProgresoScreen';
 import RankingScreen          from './src/screens/student/RankingScreen';
 import PerfilScreen           from './src/screens/student/PerfilScreen';
@@ -32,9 +33,10 @@ const Tab   = createBottomTabNavigator();
 function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login"     component={LoginScreen} />
-      <Stack.Screen name="ClassCode" component={ClassCodeScreen} />
-      <Stack.Screen name="Register"  component={RegisterScreen} />
+      <Stack.Screen name="Login"          component={LoginScreen} />
+      <Stack.Screen name="ClassCode"      component={ClassCodeScreen} />
+      <Stack.Screen name="Register"       component={RegisterScreen} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     </Stack.Navigator>
   );
 }
@@ -80,7 +82,7 @@ function AppTabs() {
         },
       })}
     >
-      <Tab.Screen name="Inicio"   component={HomeScreen} />
+      <Tab.Screen name="Inicio"   component={MapaScreen} />
       <Tab.Screen name="Progreso" component={ProgresoScreen} />
       <Tab.Screen name="Ranking"  component={RankingScreen} />
       <Tab.Screen name="Perfil"   component={PerfilScreen} />
