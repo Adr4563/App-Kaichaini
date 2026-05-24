@@ -5,6 +5,7 @@ class Ejercicio {
     this.tipo = data.tipo || 'seleccion_multiple';
     this.enunciado = data.enunciado || '';
     this.respuestaCorrecta = data.respuestaCorrecta || '';
+    this.opciones = data.opciones || '[]';
   }
 
   isValid() {

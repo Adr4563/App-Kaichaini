@@ -130,6 +130,7 @@ export default function MapaScreen({ navigation }) {
   const [ligaNombre,   setLigaNombre]   = useState('Amauta');
   const [cargando,     setCargando]     = useState(true);
   const [cargandoMapa, setCargandoMapa] = useState(false);
+  const [errorMapa,    setErrorMapa]    = useState(null);
 
   // Carga las clases del estudiante
   const cargarClases = async () => {
@@ -148,11 +149,16 @@ export default function MapaScreen({ navigation }) {
   const cargarMapa = async (idClase, bim) => {
     setCargandoMapa(true);
     setModulos([]);
+    setErrorMapa(null);
     try {
       const res = await api.get('/mapa/clase/' + idClase + '/bimestre/' + bim);
       const data = res.data && res.data.data;
       setModulos((data && data.modulos) || []);
-    } catch (_) {
+    } catch (err) {
+      const msg = (err.response && err.response.data && err.response.data.error && err.response.data.error.message)
+        || err.message
+        || 'Error al cargar modulos';
+      setErrorMapa(msg);
       setModulos([]);
     } finally {
       setCargandoMapa(false);
@@ -303,6 +309,13 @@ export default function MapaScreen({ navigation }) {
         {/* H.U. 117/123 - Lista de modulos */}
         {cargandoMapa ? (
           <ActivityIndicator color="#1a1a1a" style={{ marginTop: 40 }} />
+
+        ) : errorMapa ? (
+          <View style={s.emptyContainer}>
+            <Text style={{ fontSize: 40, marginBottom: 14 }}>⚠️</Text>
+            <Text style={s.emptyTitle}>Error al cargar</Text>
+            <Text style={s.emptySubtitle}>{errorMapa}</Text>
+          </View>
 
         ) : modulos.length === 0 ? (
           <View style={s.emptyContainer}>

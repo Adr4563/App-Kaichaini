@@ -9,9 +9,15 @@ class EjercicioRepository {
   async create(ejercicio) {
     const pool = this.database.getPool();
     const query = `
-      INSERT INTO EJERCICIO (id, "idModulo", tipo, enunciado, "respuestaCorrecta")
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *
+      INSERT INTO ejercicio (id, idmodulo, tipo, enunciado, respuestacorrecta, opciones)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING
+        id,
+        idmodulo          AS "idModulo",
+        tipo,
+        enunciado,
+        respuestacorrecta AS "respuestaCorrecta",
+        opciones
     `;
 
     try {
@@ -21,6 +27,7 @@ class EjercicioRepository {
         ejercicio.tipo || 'seleccion_multiple',
         ejercicio.enunciado,
         ejercicio.respuestaCorrecta,
+        ejercicio.opciones || '[]',
       ]);
       return new Ejercicio(rows[0]);
     } catch (error) {
@@ -30,7 +37,11 @@ class EjercicioRepository {
 
   async findById(id) {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM EJERCICIO WHERE id = $1';
+    const query = `
+      SELECT id, idmodulo AS "idModulo", tipo, enunciado,
+             respuestacorrecta AS "respuestaCorrecta", opciones
+      FROM ejercicio WHERE id = $1
+    `;
 
     try {
       const { rows } = await pool.query(query, [id]);
@@ -42,7 +53,11 @@ class EjercicioRepository {
 
   async findByModulo(idModulo) {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM EJERCICIO WHERE "idModulo" = $1 ORDER BY id ASC';
+    const query = `
+      SELECT id, idmodulo AS "idModulo", tipo, enunciado,
+             respuestacorrecta AS "respuestaCorrecta", opciones
+      FROM ejercicio WHERE idmodulo = $1 ORDER BY id ASC
+    `;
 
     try {
       const { rows } = await pool.query(query, [idModulo]);
@@ -54,7 +69,7 @@ class EjercicioRepository {
 
   async contarByModulo(idModulo) {
     const pool = this.database.getPool();
-    const query = 'SELECT COUNT(*) as count FROM EJERCICIO WHERE "idModulo" = $1';
+    const query = 'SELECT COUNT(*) as count FROM ejercicio WHERE idmodulo = $1';
 
     try {
       const { rows } = await pool.query(query, [idModulo]);
@@ -80,18 +95,28 @@ class EjercicioRepository {
       values.push(data.enunciado);
     }
     if (data.respuestaCorrecta !== undefined) {
-      fields.push(`"respuestaCorrecta" = $${paramCount++}`);
+      fields.push(`respuestacorrecta = $${paramCount++}`);
       values.push(data.respuestaCorrecta);
+    }
+    if (data.opciones !== undefined) {
+      fields.push(`opciones = $${paramCount++}`);
+      values.push(data.opciones);
     }
 
     if (fields.length === 0) return false;
 
     values.push(id);
     const query = `
-      UPDATE EJERCICIO
+      UPDATE ejercicio
       SET ${fields.join(', ')}
       WHERE id = $${paramCount++}
-      RETURNING *
+      RETURNING
+        id,
+        idmodulo          AS "idModulo",
+        tipo,
+        enunciado,
+        respuestacorrecta AS "respuestaCorrecta",
+        opciones
     `;
 
     try {

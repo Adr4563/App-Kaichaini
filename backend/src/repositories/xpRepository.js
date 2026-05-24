@@ -66,19 +66,19 @@ class XPRepository {
     const query = `
       SELECT COALESCE(SUM(
         CASE
-          WHEN e."tipo" = 'seleccion_multiple' THEN 10
-          WHEN e."tipo" = 'clic_numero' THEN 10
-          WHEN e."tipo" = 'banco_palabras' THEN 15
-          WHEN e."tipo" = 'drag_drop' THEN 15
+          WHEN e.tipo = 'seleccion_multiple' THEN 10
+          WHEN e.tipo = 'clic_numero' THEN 10
+          WHEN e.tipo = 'banco_palabras' THEN 15
+          WHEN e.tipo = 'drag_drop' THEN 15
           ELSE 0
         END
       ), 0) as "totalXP"
-      FROM RESPUESTA r
-      JOIN EJERCICIO e ON r."idEjercicio" = e.id
-      JOIN MODULO m ON e."idModulo" = m.id
-      WHERE r."idEstudiante" = $1
-      AND m."idClase" = $2
-      AND r."esCorrecta" = true
+      FROM respuesta r
+      JOIN ejercicio e ON r.idejercicio = e.id
+      JOIN modulo m ON e.idmodulo = m.id
+      WHERE r.idestudiante = $1
+      AND m.idclase = $2
+      AND r.escorrecta = true
     `;
 
     try {

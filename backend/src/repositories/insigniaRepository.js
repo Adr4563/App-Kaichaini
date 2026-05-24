@@ -33,10 +33,10 @@ class InsigniaRepository {
     // H.U. 118 - Obtener insignias del estudiante
     const pool = this.database.getPool();
     const query = `
-      SELECT i.* FROM INSIGNIA i
-      JOIN ESTUDIANTE_INSIGNIA ei ON i.id = ei."idInsignia"
-      WHERE ei."idEstudiante" = $1
-      ORDER BY ei."fechaDesbloqueada" DESC
+      SELECT i.* FROM insignia i
+      JOIN estudiante_insignia ei ON i.id = ei.idinsignia
+      WHERE ei.idestudiante = $1
+      ORDER BY ei.fechadesbloqueo DESC
     `;
 
     try {
@@ -51,7 +51,7 @@ class InsigniaRepository {
     // H.U. 109 - Desbloquear insignia
     const pool = this.database.getPool();
     const query = `
-      INSERT INTO ESTUDIANTE_INSIGNIA ("idEstudiante", "idInsignia", "fechaDesbloqueada")
+      INSERT INTO estudiante_insignia (idestudiante, idinsignia, fechadesbloqueo)
       VALUES ($1, $2, NOW())
       ON CONFLICT DO NOTHING
       RETURNING *
@@ -68,8 +68,8 @@ class InsigniaRepository {
   async hasInsignia(idEstudiante, idInsignia) {
     const pool = this.database.getPool();
     const query = `
-      SELECT id FROM ESTUDIANTE_INSIGNIA
-      WHERE "idEstudiante" = $1 AND "idInsignia" = $2
+      SELECT idestudiante FROM estudiante_insignia
+      WHERE idestudiante = $1 AND idinsignia = $2
     `;
 
     try {
