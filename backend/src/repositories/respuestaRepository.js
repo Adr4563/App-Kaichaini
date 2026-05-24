@@ -9,9 +9,15 @@ class RespuestaRepository {
   async create(data) {
     const pool = this.database.getPool();
     const query = `
-      INSERT INTO RESPUESTA (id, "idEstudiante", "idEjercicio", respuesta, "esCorrecta")
+      INSERT INTO respuesta (id, idestudiante, idejercicio, respuesta, escorrecta)
       VALUES ($1, $2, $3, $4, $5)
-      RETURNING *
+      RETURNING
+        id,
+        idestudiante AS "idEstudiante",
+        idejercicio  AS "idEjercicio",
+        respuesta,
+        escorrecta   AS "esCorrecta",
+        fecha        AS "fechaRespuesta"
     `;
 
     try {
@@ -31,10 +37,19 @@ class RespuestaRepository {
   async findByEstudiante(idEstudiante) {
     const pool = this.database.getPool();
     const query = `
-      SELECT r.* FROM RESPUESTA r
-      JOIN EJERCICIO e ON r."idEjercicio" = e.id
-      WHERE r."idEstudiante" = $1
-      ORDER BY r."fechaRespuesta" DESC
+      SELECT
+        r.id,
+        r.idestudiante AS "idEstudiante",
+        r.idejercicio  AS "idEjercicio",
+        r.respuesta,
+        r.escorrecta   AS "esCorrecta",
+        r.fecha        AS "fechaRespuesta",
+        e.enunciado,
+        e.tipo
+      FROM respuesta r
+      JOIN ejercicio e ON e.id = r.idejercicio
+      WHERE r.idestudiante = $1
+      ORDER BY r.fecha DESC
     `;
 
     try {
@@ -48,10 +63,18 @@ class RespuestaRepository {
   async findByEstudianteModulo(idEstudiante, idModulo) {
     const pool = this.database.getPool();
     const query = `
-      SELECT r.* FROM RESPUESTA r
-      JOIN EJERCICIO e ON r."idEjercicio" = e.id
-      WHERE r."idEstudiante" = $1 AND e."idModulo" = $2
-      ORDER BY r."fechaRespuesta" ASC
+      SELECT
+        r.id,
+        r.idestudiante AS "idEstudiante",
+        r.idejercicio  AS "idEjercicio",
+        r.respuesta,
+        r.escorrecta   AS "esCorrecta",
+        r.fecha        AS "fechaRespuesta"
+      FROM respuesta r
+      JOIN ejercicio e ON e.id = r.idejercicio
+      WHERE r.idestudiante = $1
+        AND e.idmodulo     = $2
+      ORDER BY r.fecha ASC
     `;
 
     try {
@@ -65,9 +88,12 @@ class RespuestaRepository {
   async contarCorrectasPorModulo(idEstudiante, idModulo) {
     const pool = this.database.getPool();
     const query = `
-      SELECT COUNT(*) as count FROM RESPUESTA r
-      JOIN EJERCICIO e ON r."idEjercicio" = e.id
-      WHERE r."idEstudiante" = $1 AND e."idModulo" = $2 AND r."esCorrecta" = true
+      SELECT COUNT(*) AS count
+      FROM respuesta r
+      JOIN ejercicio e ON e.id = r.idejercicio
+      WHERE r.idestudiante = $1
+        AND e.idmodulo     = $2
+        AND r.escorrecta   = true
     `;
 
     try {
