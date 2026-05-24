@@ -9,9 +9,15 @@ class ModuloRepository {
   async create(modulo) {
     const pool = this.database.getPool();
     const query = `
-      INSERT INTO MODULO (id, "idClase", nombre, orden, bimestre, estado)
+      INSERT INTO modulo (id, idclase, nombre, orden, bimestre, estado)
       VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING *
+      RETURNING
+        id,
+        idclase   AS "idClase",
+        nombre,
+        orden,
+        bimestre,
+        estado
     `;
 
     try {
@@ -31,7 +37,10 @@ class ModuloRepository {
 
   async findById(id) {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM MODULO WHERE id = $1';
+    const query = `
+      SELECT id, idclase AS "idClase", nombre, orden, bimestre, estado
+      FROM modulo WHERE id = $1
+    `;
 
     try {
       const { rows } = await pool.query(query, [id]);
@@ -44,8 +53,9 @@ class ModuloRepository {
   async findByClase(idClase) {
     const pool = this.database.getPool();
     const query = `
-      SELECT * FROM MODULO
-      WHERE "idClase" = $1
+      SELECT id, idclase AS "idClase", nombre, orden, bimestre, estado
+      FROM modulo
+      WHERE idclase = $1
       ORDER BY bimestre ASC, orden ASC
     `;
 
@@ -60,8 +70,9 @@ class ModuloRepository {
   async findByClaseBimestre(idClase, bimestre) {
     const pool = this.database.getPool();
     const query = `
-      SELECT * FROM MODULO
-      WHERE "idClase" = $1 AND bimestre = $2
+      SELECT id, idclase AS "idClase", nombre, orden, bimestre, estado
+      FROM modulo
+      WHERE idclase = $1 AND bimestre = $2
       ORDER BY orden ASC
     `;
 
@@ -84,8 +95,9 @@ class ModuloRepository {
 
       // Luego buscar el siguiente
       const query = `
-        SELECT * FROM MODULO
-        WHERE "idClase" = $1
+        SELECT id, idclase AS "idClase", nombre, orden, bimestre, estado
+        FROM modulo
+        WHERE idclase = $1
         AND bimestre = $2
         AND orden = $3
         LIMIT 1
