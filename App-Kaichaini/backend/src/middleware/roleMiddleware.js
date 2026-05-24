@@ -26,6 +26,4 @@ const requireRole = (allowedRoles) => {
   };
 };
 
-module.exports = {
-  requireRole,
-};
+module.exports = requireRole;
