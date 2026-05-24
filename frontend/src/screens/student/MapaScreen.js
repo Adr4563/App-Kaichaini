@@ -1,10 +1,7 @@
-/**
- * MapaScreen.js
- *
- * H.U. 117 — Vista del mapa de aprendizaje por curso/clase y bimestre
- * H.U. 123 — Visualización de progreso por módulo
- * H.U. 302 — Barra de progreso de XP dentro del mapa de cada clase
- */
+// MapaScreen.js
+// H.U. 117 - Vista del mapa de aprendizaje por curso/clase y bimestre
+// H.U. 123 - Visualizacion de progreso por modulo
+// H.U. 302 - Barra de progreso de XP dentro del mapa de cada clase
 
 import React, { useState, useCallback } from 'react';
 import {
@@ -15,7 +12,7 @@ import { Feather } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import api from '../../services/api';
 
-/* ── Constantes ───────────────────────────────────────────────────────────── */
+// Bimestres disponibles
 const BIMESTRES = [
   { label: 'I',   value: 1 },
   { label: 'II',  value: 2 },
@@ -31,44 +28,39 @@ const LIGA_XP = {
   Inca:   { threshold: null, next: null      },
 };
 
-/* ── Determinar estado del módulo ─────────────────────────────────────────── */
-function calcularEstado(modulo, progreso, index, modulosConProgreso) {
-  const completados = progreso?.ejerciciosCompletados ?? 0;
-  const total       = progreso?.totalEjercicios ?? 0;
-
-  // En progreso: tiene ejercicios iniciados pero no todos completados
-  if (completados > 0 && completados < total) return 'en_progreso';
-
-  // Completado (lo mostramos como disponible con check)
-  if (total > 0 && completados >= total) return 'completado';
-
-  // Primer módulo siempre disponible
-  if (index === 0) return 'disponible';
-
-  // Los siguientes solo si el anterior fue completado
-  const anterior = modulosConProgreso[index - 1];
-  const antComp  = anterior?.progreso?.ejerciciosCompletados ?? 0;
-  const antTotal = anterior?.progreso?.totalEjercicios ?? 0;
-  const anteriorCompleto = antTotal > 0 && antComp >= antTotal;
-
-  return anteriorCompleto ? 'disponible' : 'bloqueado';
-}
-
-/* ── Colores por estado ───────────────────────────────────────────────────── */
+// Estilos visuales por estado del modulo
 const ESTADO_STYLE = {
-  disponible: { bg: '#fff',    border: '#1a1a1a', icon: 'play-circle',  iconColor: '#1a1a1a', textColor: '#1a1a1a' },
-  en_progreso:{ bg: '#f0f7f0', border: '#2e7d32', icon: 'loader',       iconColor: '#2e7d32', textColor: '#1a1a1a' },
-  completado: { bg: '#e8f5e9', border: '#2e7d32', icon: 'check-circle', iconColor: '#2e7d32', textColor: '#1a1a1a' },
-  bloqueado:  { bg: '#f5f5f5', border: '#e0e0e0', icon: 'lock',         iconColor: '#bbb',    textColor: '#bbb'    },
+  disponible:  { bg: '#fff',    border: '#1a1a1a', icon: 'play-circle',  iconColor: '#1a1a1a', textColor: '#1a1a1a' },
+  en_progreso: { bg: '#f0f7f0', border: '#2e7d32', icon: 'loader',       iconColor: '#2e7d32', textColor: '#1a1a1a' },
+  completado:  { bg: '#e8f5e9', border: '#2e7d32', icon: 'check-circle', iconColor: '#2e7d32', textColor: '#1a1a1a' },
+  bloqueado:   { bg: '#f5f5f5', border: '#e0e0e0', icon: 'lock',         iconColor: '#bbb',    textColor: '#bbb'    },
 };
 
-/* ── Componente ModuloCard ───────────────────────────────────────────────── */
+// Calcula el estado visual de un modulo segun progreso y orden
+function calcularEstado(progreso, index, modulosConProgreso) {
+  const completados = (progreso && progreso.ejerciciosCompletados) || 0;
+  const total       = (progreso && progreso.totalEjercicios) || 0;
+
+  if (completados > 0 && completados < total) return 'en_progreso';
+  if (total > 0 && completados >= total) return 'completado';
+  if (index === 0) return 'disponible';
+
+  const anterior     = modulosConProgreso[index - 1];
+  const antProg      = anterior && anterior.progreso;
+  const antComp      = (antProg && antProg.ejerciciosCompletados) || 0;
+  const antTotal     = (antProg && antProg.totalEjercicios) || 0;
+  const anteriorOk   = antTotal > 0 && antComp >= antTotal;
+
+  return anteriorOk ? 'disponible' : 'bloqueado';
+}
+
+// Tarjeta de modulo individual (H.U. 117 + H.U. 123)
 function ModuloCard({ item, index, modulosConProgreso, navigation }) {
   const { modulo, progreso } = item;
-  const estado  = calcularEstado(modulo, progreso, index, modulosConProgreso);
+  const estado  = calcularEstado(progreso, index, modulosConProgreso);
   const st      = ESTADO_STYLE[estado];
-  const comp    = progreso?.ejerciciosCompletados ?? 0;
-  const total   = progreso?.totalEjercicios ?? 0;
+  const comp    = (progreso && progreso.ejerciciosCompletados) || 0;
+  const total   = (progreso && progreso.totalEjercicios) || 0;
   const pct     = total > 0 ? Math.round((comp / total) * 100) : 0;
   const bloq    = estado === 'bloqueado';
 
@@ -76,25 +68,43 @@ function ModuloCard({ item, index, modulosConProgreso, navigation }) {
     <TouchableOpacity
       disabled={bloq}
       activeOpacity={0.8}
-      onPress={() => navigation.navigate('EjerciciosModulo', { idModulo: modulo.id, nombreModulo: modulo.nombre })}
+      onPress={() =>
+        navigation.navigate('EjerciciosModulo', {
+          idModulo: modulo.id,
+          nombreModulo: modulo.nombre,
+        })
+      }
       style={[s.moduloCard, { backgroundColor: st.bg, borderColor: st.border }]}
     >
-      {/* Fila superior: número + nombre + ícono */}
+      {/* Fila: numero + nombre + icono de estado */}
       <View style={s.moduloHeader}>
         <View style={[s.ordenCircle, { borderColor: st.border, backgroundColor: bloq ? '#e0e0e0' : '#fff' }]}>
-          <Text style={[s.ordenText, { color: st.textColor }]}>{modulo.orden ?? index + 1}</Text>
+          <Text style={[s.ordenText, { color: st.textColor }]}>
+            {modulo.orden != null ? modulo.orden : index + 1}
+          </Text>
         </View>
-        <Text style={[s.moduloNombre, { color: st.textColor, flex: 1, marginHorizontal: 12 }]} numberOfLines={2}>
+        <Text
+          style={[s.moduloNombre, { color: st.textColor }]}
+          numberOfLines={2}
+        >
           {modulo.nombre}
         </Text>
         <Feather name={st.icon} size={20} color={st.iconColor} />
       </View>
 
-      {/* H.U. 123 — Barra de progreso */}
+      {/* H.U. 123 - Barra de progreso del modulo */}
       {!bloq && total > 0 && (
         <View style={s.progresoContainer}>
           <View style={s.progresoBarBg}>
-            <View style={[s.progresoBarFill, { width: `${pct}%`, backgroundColor: estado === 'completado' ? '#2e7d32' : '#1a1a1a' }]} />
+            <View
+              style={[
+                s.progresoBarFill,
+                {
+                  width: pct + '%',
+                  backgroundColor: estado === 'completado' ? '#2e7d32' : '#1a1a1a',
+                },
+              ]}
+            />
           </View>
           <Text style={[s.progresoText, { color: st.textColor }]}>
             {comp}/{total} ejercicios
@@ -102,15 +112,15 @@ function ModuloCard({ item, index, modulosConProgreso, navigation }) {
         </View>
       )}
 
-      {/* Módulo bloqueado: texto indicativo */}
+      {/* Modulo bloqueado */}
       {bloq && (
-        <Text style={s.bloqText}>Completa el módulo anterior para desbloquear</Text>
+        <Text style={s.bloqText}>Completa el modulo anterior para desbloquear</Text>
       )}
     </TouchableOpacity>
   );
 }
 
-/* ── Componente principal ─────────────────────────────────────────────────── */
+// Pantalla principal del mapa
 export default function MapaScreen({ navigation }) {
   const [clases,       setClases]       = useState([]);
   const [tabActivo,    setTabActivo]    = useState(0);
@@ -121,11 +131,11 @@ export default function MapaScreen({ navigation }) {
   const [cargando,     setCargando]     = useState(true);
   const [cargandoMapa, setCargandoMapa] = useState(false);
 
-  /* ── Carga inicial: clases del estudiante ─────────────────────────────── */
+  // Carga las clases del estudiante
   const cargarClases = async () => {
     try {
-      const { data } = await api.get('/clases/mis-clases');
-      const lista = data.data || [];
+      const res = await api.get('/clases/mis-clases');
+      const lista = (res.data && res.data.data) || [];
       setClases(lista);
       if (lista.length > 0) {
         await cargarMapa(lista[0].id, 1);
@@ -134,13 +144,14 @@ export default function MapaScreen({ navigation }) {
     } catch (_) {}
   };
 
-  /* ── Carga del mapa por clase y bimestre ─────────────────────────────── */
+  // Carga modulos con progreso por clase y bimestre (H.U. 117)
   const cargarMapa = async (idClase, bim) => {
     setCargandoMapa(true);
     setModulos([]);
     try {
-      const { data } = await api.get(`/mapa/clase/${idClase}/bimestre/${bim}`);
-      setModulos(data.data?.modulos || []);
+      const res = await api.get('/mapa/clase/' + idClase + '/bimestre/' + bim);
+      const data = res.data && res.data.data;
+      setModulos((data && data.modulos) || []);
     } catch (_) {
       setModulos([]);
     } finally {
@@ -148,21 +159,26 @@ export default function MapaScreen({ navigation }) {
     }
   };
 
-  /* ── Carga XP de la clase (H.U. 302) ────────────────────────────────── */
+  // Carga XP acumulado en la clase (H.U. 302)
   const cargarXP = async (idClase) => {
     try {
-      const { data } = await api.get(`/xp/clase/${idClase}`);
-      setXpClase(data.data?.xpTotal ?? 0);
+      const res = await api.get('/xp/clase/' + idClase);
+      const data = res.data && res.data.data;
+      setXpClase((data && data.xpTotal) || 0);
     } catch (_) {
       setXpClase(0);
     }
   };
 
-  /* ── Cargar perfil para conocer la liga ─────────────────────────────── */
+  // Carga la liga del perfil para la barra XP
   const cargarLiga = async () => {
     try {
-      const { data } = await api.get('/perfil');
-      setLigaNombre(data.data?.estadisticas?.liga?.nombre ?? 'Amauta');
+      const res = await api.get('/perfil');
+      const liga = res.data &&
+                   res.data.data &&
+                   res.data.data.estadisticas &&
+                   res.data.data.estadisticas.liga;
+      setLigaNombre((liga && liga.nombre) || 'Amauta');
     } catch (_) {}
   };
 
@@ -173,21 +189,20 @@ export default function MapaScreen({ navigation }) {
     }, []),
   );
 
-  /* ── Cambiar clase (tab) ─────────────────────────────────────────────── */
   const cambiarClase = (idx) => {
     setTabActivo(idx);
     setBimestre(1);
-    cargarMapa(clases[idx].id, 1);
-    cargarXP(clases[idx].id);
+    if (clases[idx]) {
+      cargarMapa(clases[idx].id, 1);
+      cargarXP(clases[idx].id);
+    }
   };
 
-  /* ── Cambiar bimestre ────────────────────────────────────────────────── */
   const cambiarBimestre = (bim) => {
     setBimestre(bim);
     if (clases[tabActivo]) cargarMapa(clases[tabActivo].id, bim);
   };
 
-  /* ── Loading inicial ─────────────────────────────────────────────────── */
   if (cargando) {
     return (
       <View style={s.centered}>
@@ -196,111 +211,124 @@ export default function MapaScreen({ navigation }) {
     );
   }
 
-  /* ── XP bar (H.U. 302) ────────────────────────────────────────────────── */
   const claseActiva = clases[tabActivo];
   const ligaInfo    = LIGA_XP[ligaNombre] || LIGA_XP.Amauta;
-  const xpMax       = ligaInfo.threshold ?? xpClase || 1;
-  const xpPct       = ligaInfo.threshold ? Math.min((xpClase / xpMax) * 100, 100) : 100;
+  const xpMax       = ligaInfo.threshold || (xpClase > 0 ? xpClase : 1);
+  const xpPct       = ligaInfo.threshold
+    ? Math.min(Math.round((xpClase / xpMax) * 100), 100)
+    : 100;
+  const bimestreLabel = (BIMESTRES.find(function(b) { return b.value === bimestre; }) || {}).label;
 
   return (
     <View style={s.root}>
 
-      {/* ── Header ──────────────────────────────────────────────────────── */}
+      {/* Header */}
       <View style={s.header}>
         <Text style={s.headerTitle}>Mapa de aprendizaje</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
 
-        {/* ── H.U. 117 — Tabs por clase ───────────────────────────────── */}
+        {/* H.U. 117 - Tabs por clase */}
         {clases.length > 0 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
-            {clases.map((c, i) => (
-              <TouchableOpacity
-                key={c.id}
-                onPress={() => cambiarClase(i)}
-                style={[s.tab, tabActivo === i ? s.tabActivo : s.tabInactivo]}
-              >
-                <Text style={{ fontSize: 14 }}>
-                  {c.curso?.toLowerCase().includes('mat') ? '📐' :
-                   c.curso?.toLowerCase().includes('com') ? '📖' : '📚'}
-                </Text>
-                <Text style={[s.tabText, { color: tabActivo === i ? '#fff' : '#666' }]}>
-                  {c.nombre}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginBottom: 20 }}
+          >
+            {clases.map(function(c, i) {
+              const activo = tabActivo === i;
+              let emoji = '📚';
+              if (c.curso) {
+                const cur = c.curso.toLowerCase();
+                if (cur.includes('mat')) emoji = '📐';
+                else if (cur.includes('com')) emoji = '📖';
+              }
+              return (
+                <TouchableOpacity
+                  key={c.id}
+                  onPress={() => cambiarClase(i)}
+                  style={[s.tab, activo ? s.tabActivo : s.tabInactivo]}
+                >
+                  <Text style={{ fontSize: 14 }}>{emoji}</Text>
+                  <Text style={[s.tabText, { color: activo ? '#fff' : '#666' }]}>
+                    {c.nombre}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         )}
 
-        {/* ── H.U. 302 — Barra XP de la clase ────────────────────────── */}
+        {/* H.U. 302 - Barra de XP de la clase */}
         {claseActiva && (
           <View style={s.xpCard}>
             <View style={s.xpRow}>
-              <Text style={s.xpLabel}>
-                XP en {claseActiva.nombre}
-              </Text>
+              <Text style={s.xpLabel}>XP en {claseActiva.nombre}</Text>
               <Text style={s.xpValue}>
-                {xpClase}{ligaInfo.threshold ? ` / ${xpMax}` : ''} XP
+                {xpClase}{ligaInfo.threshold ? ' / ' + xpMax : ''} XP
               </Text>
             </View>
             <View style={s.xpBarBg}>
-              <View style={[s.xpBarFill, { width: `${Math.round(xpPct)}%` }]} />
+              <View style={[s.xpBarFill, { width: xpPct + '%' }]} />
             </View>
             {ligaInfo.next ? (
               <Text style={s.xpMeta}>
-                {Math.max(xpMax - xpClase, 0)} XP para subir a 🏆 {ligaInfo.next}
+                {Math.max(xpMax - xpClase, 0)} XP para subir a {ligaInfo.next}
               </Text>
             ) : (
-              <Text style={s.xpMeta}>Nivel máximo alcanzado 🎉</Text>
+              <Text style={s.xpMeta}>Nivel maximo alcanzado</Text>
             )}
           </View>
         )}
 
-        {/* ── H.U. 117 — Selector de bimestre ────────────────────────── */}
+        {/* H.U. 117 - Selector de bimestre */}
         <View style={s.bimestreRow}>
-          {BIMESTRES.map((b) => (
-            <TouchableOpacity
-              key={b.value}
-              onPress={() => cambiarBimestre(b.value)}
-              style={[s.bimestreBtn, bimestre === b.value && s.bimestreBtnActivo]}
-            >
-              <Text style={[s.bimestreText, bimestre === b.value && s.bimestreTextActivo]}>
-                {b.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {BIMESTRES.map(function(b) {
+            const activo = bimestre === b.value;
+            return (
+              <TouchableOpacity
+                key={b.value}
+                onPress={() => cambiarBimestre(b.value)}
+                style={[s.bimestreBtn, activo && s.bimestreBtnActivo]}
+              >
+                <Text style={[s.bimestreText, activo && s.bimestreTextActivo]}>
+                  {b.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
-        {/* ── H.U. 117/123 — Lista de módulos ─────────────────────────── */}
+        {/* H.U. 117/123 - Lista de modulos */}
         {cargandoMapa ? (
           <ActivityIndicator color="#1a1a1a" style={{ marginTop: 40 }} />
 
         ) : modulos.length === 0 ? (
           <View style={s.emptyContainer}>
             <Text style={{ fontSize: 48, marginBottom: 14 }}>🗺️</Text>
-            <Text style={s.emptyTitle}>Sin módulos</Text>
+            <Text style={s.emptyTitle}>Sin modulos</Text>
             <Text style={s.emptySubtitle}>
-              El docente aún no asignó módulos para el bimestre {
-                BIMESTRES.find(b => b.value === bimestre)?.label
-              }.
+              El docente aun no asigno modulos para el bimestre {bimestreLabel}.
             </Text>
           </View>
 
         ) : (
           <View>
-            <Text style={s.modulosSectionTitle}>
-              Bimestre {BIMESTRES.find(b => b.value === bimestre)?.label} · {modulos.length} módulo{modulos.length !== 1 ? 's' : ''}
+            <Text style={s.sectionTitle}>
+              Bimestre {bimestreLabel} · {modulos.length} modulo{modulos.length !== 1 ? 's' : ''}
             </Text>
-            {modulos.map((item, index) => (
-              <ModuloCard
-                key={item.modulo.id}
-                item={item}
-                index={index}
-                modulosConProgreso={modulos}
-                navigation={navigation}
-              />
-            ))}
+            {modulos.map(function(item, index) {
+              return (
+                <ModuloCard
+                  key={item.modulo.id}
+                  item={item}
+                  index={index}
+                  modulosConProgreso={modulos}
+                  navigation={navigation}
+                />
+              );
+            })}
           </View>
         )}
 
@@ -309,25 +337,25 @@ export default function MapaScreen({ navigation }) {
   );
 }
 
-/* ── Estilos ──────────────────────────────────────────────────────────────── */
 const s = StyleSheet.create({
   root:    { flex: 1, backgroundColor: '#fff' },
   centered:{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
 
   header: {
-    height: 80, paddingHorizontal: 16, paddingTop: 24,
-    flexDirection: 'row', alignItems: 'center',
-    borderBottomWidth: 1, borderBottomColor: '#eaeaea',
+    height: 80,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    justifyContent: 'flex-end',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eaeaea',
   },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: '#1a1a1a' },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#1a1a1a', marginBottom: 8 },
 
-  /* Tabs */
   tab:        { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1, marginRight: 10 },
   tabActivo:  { backgroundColor: '#1a1a1a', borderColor: '#1a1a1a' },
   tabInactivo:{ backgroundColor: '#fff',    borderColor: '#e0e0e0' },
   tabText:    { fontSize: 13, fontWeight: '600' },
 
-  /* XP card (H.U. 302) */
   xpCard:  { borderWidth: 1, borderColor: '#1a1a1a', borderRadius: 14, padding: 14, marginBottom: 20 },
   xpRow:   { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   xpLabel: { fontSize: 12, color: '#666' },
@@ -336,23 +364,20 @@ const s = StyleSheet.create({
   xpBarFill:{ height: '100%', backgroundColor: '#1b5e20', borderRadius: 4 },
   xpMeta:  { fontSize: 11, color: '#999' },
 
-  /* Bimestre */
-  bimestreRow:      { flexDirection: 'row', gap: 8, marginBottom: 20 },
-  bimestreBtn:      { flex: 1, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: '#e0e0e0', alignItems: 'center' },
-  bimestreBtnActivo:{ backgroundColor: '#1a1a1a', borderColor: '#1a1a1a' },
-  bimestreText:     { fontSize: 14, fontWeight: '600', color: '#666' },
+  bimestreRow:       { flexDirection: 'row', gap: 8, marginBottom: 20 },
+  bimestreBtn:       { flex: 1, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: '#e0e0e0', alignItems: 'center' },
+  bimestreBtnActivo: { backgroundColor: '#1a1a1a', borderColor: '#1a1a1a' },
+  bimestreText:      { fontSize: 14, fontWeight: '600', color: '#666' },
   bimestreTextActivo:{ color: '#fff' },
 
-  modulosSectionTitle:{ fontSize: 12, color: '#999', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 14 },
+  sectionTitle: { fontSize: 12, color: '#999', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 14 },
 
-  /* Módulo card (H.U. 117 + 123) */
   moduloCard:   { borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 12 },
   moduloHeader: { flexDirection: 'row', alignItems: 'center' },
-  ordenCircle:  { width: 32, height: 32, borderRadius: 16, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
+  ordenCircle:  { width: 32, height: 32, borderRadius: 16, borderWidth: 1, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   ordenText:    { fontSize: 13, fontWeight: '700' },
-  moduloNombre: { fontSize: 14, fontWeight: '600', lineHeight: 20 },
+  moduloNombre: { fontSize: 14, fontWeight: '600', lineHeight: 20, flex: 1, marginRight: 8 },
 
-  /* Barra de progreso del módulo (H.U. 123) */
   progresoContainer: { marginTop: 12 },
   progresoBarBg:     { height: 6, backgroundColor: '#e0e0e0', borderRadius: 3, marginBottom: 4 },
   progresoBarFill:   { height: '100%', borderRadius: 3 },
@@ -360,7 +385,6 @@ const s = StyleSheet.create({
 
   bloqText: { fontSize: 11, color: '#bbb', marginTop: 8 },
 
-  /* Empty state */
   emptyContainer: { alignItems: 'center', paddingVertical: 60 },
   emptyTitle:     { fontSize: 16, fontWeight: '700', color: '#1a1a1a', marginBottom: 8 },
   emptySubtitle:  { fontSize: 13, color: '#888', textAlign: 'center', lineHeight: 20, maxWidth: 260 },
