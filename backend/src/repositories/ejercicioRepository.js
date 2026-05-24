@@ -42,7 +42,7 @@ class EjercicioRepository {
 
   async findByModulo(idModulo) {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM EJERCICIO WHERE "idModulo" = $1 ORDER BY ROWID ASC';
+    const query = 'SELECT * FROM EJERCICIO WHERE "idModulo" = $1 ORDER BY id ASC';
 
     try {
       const { rows } = await pool.query(query, [idModulo]);

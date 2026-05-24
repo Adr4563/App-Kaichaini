@@ -67,7 +67,7 @@ class XPRepository {
       SELECT COALESCE(SUM(
         CASE
           WHEN e."tipo" = 'seleccion_multiple' THEN 10
-          WHEN e."tipo" = 'clic_imagen' THEN 10
+          WHEN e."tipo" = 'clic_numero' THEN 10
           WHEN e."tipo" = 'banco_palabras' THEN 15
           WHEN e."tipo" = 'drag_drop' THEN 15
           ELSE 0
