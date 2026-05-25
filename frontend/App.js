@@ -21,10 +21,12 @@ import RankingScreen          from './src/screens/student/RankingScreen';
 import PerfilScreen           from './src/screens/student/PerfilScreen';
 
 // Student screens (stack / modal)
-import PersonalizarPerfilScreen from './src/screens/student/PersonalizarPerfilScreen';
-import UnirseAClaseScreen       from './src/screens/student/UnirseAClaseScreen';
-import SilaboScreen             from './src/screens/student/SilaboScreen';
-import MaterialScreen           from './src/screens/student/MaterialScreen';
+import PersonalizarPerfilScreen   from './src/screens/student/PersonalizarPerfilScreen';
+import UnirseAClaseScreen         from './src/screens/student/UnirseAClaseScreen';
+import SilaboScreen               from './src/screens/student/SilaboScreen';
+import MaterialScreen             from './src/screens/student/MaterialScreen';
+import MiColeccionScreen          from './src/screens/student/MiColeccionScreen';          // H.U. 118
+import InsigniaDesbloqueadaScreen from './src/screens/student/InsigniaDesbloqueadaScreen'; // H.U. 109
 
 const Stack = createNativeStackNavigator();
 const Tab   = createBottomTabNavigator();
@@ -95,10 +97,12 @@ function AppStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Tabs"               component={AppTabs} />
-      <Stack.Screen name="PersonalizarPerfil" component={PersonalizarPerfilScreen} />
-      <Stack.Screen name="UnirseAClase"       component={UnirseAClaseScreen} />
-      <Stack.Screen name="Silabo"             component={SilaboScreen} />
-      <Stack.Screen name="Material"           component={MaterialScreen} />
+      <Stack.Screen name="PersonalizarPerfil"   component={PersonalizarPerfilScreen} />
+      <Stack.Screen name="UnirseAClase"         component={UnirseAClaseScreen} />
+      <Stack.Screen name="Silabo"               component={SilaboScreen} />
+      <Stack.Screen name="Material"             component={MaterialScreen} />
+      <Stack.Screen name="MiColeccion"          component={MiColeccionScreen} />           {/* H.U. 118 */}
+      <Stack.Screen name="InsigniaDesbloqueada" component={InsigniaDesbloqueadaScreen} />  {/* H.U. 109 */}
     </Stack.Navigator>
   );
 }

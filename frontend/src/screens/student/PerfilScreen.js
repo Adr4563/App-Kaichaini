@@ -126,7 +126,9 @@ export default function PerfilScreen({ navigation }) {
         {/* Insignias */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <Text style={{ fontSize: 15, fontWeight: '700', color: '#1a1a1a' }}>Mis insignias</Text>
-          <Text style={{ fontSize: 12, color: '#666' }}>Ver todas →</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('MiColeccion')}>
+            <Text style={{ fontSize: 12, color: '#666' }}>Ver todas →</Text>
+          </TouchableOpacity>
         </View>
 
         {ganadas.length === 0 && todasInsig.length === 0 ? (
