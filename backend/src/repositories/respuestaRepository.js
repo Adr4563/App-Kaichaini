@@ -103,6 +103,24 @@ class RespuestaRepository {
       throw new Error(`Error al contar respuestas correctas: ${error.message}`);
     }
   }
+
+  async contarTotalCorrectas(idEstudiante) {
+    // H.U. 109 - Total de respuestas correctas del estudiante (todas las clases)
+    const pool = this.database.getPool();
+    const query = `
+      SELECT COUNT(*) AS count
+      FROM respuesta
+      WHERE idestudiante = $1
+        AND escorrecta   = true
+    `;
+
+    try {
+      const { rows } = await pool.query(query, [idEstudiante]);
+      return parseInt(rows[0].count) || 0;
+    } catch (error) {
+      throw new Error(`Error al contar respuestas totales: ${error.message}`);
+    }
+  }
 }
 
 module.exports = RespuestaRepository;

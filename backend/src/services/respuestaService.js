@@ -90,13 +90,16 @@ class RespuestaService {
       }
 
       // 8. Verificar y desbloquear insignias
+      const totalCorrectasGlobal = await this.respuestaRepository.contarTotalCorrectas(idEstudiante);
+
       insigniasDesbloqueadas = await this.insigniaService.verificarYDesbloquear(
         idEstudiante,
         {
           primerEjercicioCorrecto: true,
           primerModuloCompletado: porcentajeAciertos === 100,
-          cienEjercicios: totalEjercicios >= 100,
           notaPerfecta: porcentajeAciertos === 100,
+          totalCorrectasGlobal,
+          xpTotal,
         }
       );
 
