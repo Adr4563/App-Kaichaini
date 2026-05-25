@@ -1,13 +1,14 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  Image, Modal, ActivityIndicator,
+  Image, Modal, ActivityIndicator, StyleSheet,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import LogoutModal from '../../components/LogoutModal';
 import api from '../../services/api';
+import { getBadgePng } from '../../utils/badgeImages';
 
 const LIGA_NEXT = {
   Amauta: { next: 'Panaca', threshold: 500  },
@@ -16,16 +17,14 @@ const LIGA_NEXT = {
   Inca:   { next: null,     threshold: null  },
 };
 
-const INSIGNIA_ICONS = ['⭐', '🏆', '🎯', '💎', '🔥', '⚡', '🌟', '🎖️'];
-
 export default function PerfilScreen({ navigation }) {
   const { usuario, logout } = useAuth();
-  const [perfil,       setPerfil]       = useState(null);
-  const [todasInsig,   setTodasInsig]   = useState([]);
-  const [clases,       setClases]       = useState([]);
-  const [cargando,     setCargando]     = useState(true);
-  const [showConfig,   setShowConfig]   = useState(false);
-  const [showLogout,   setShowLogout]   = useState(false);
+  const [perfil,     setPerfil]     = useState(null);
+  const [todasInsig, setTodasInsig] = useState([]);
+  const [clases,     setClases]     = useState([]);
+  const [cargando,   setCargando]   = useState(true);
+  const [showConfig, setShowConfig] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   const cargar = async () => {
     try {
@@ -45,11 +44,11 @@ export default function PerfilScreen({ navigation }) {
 
   useFocusEffect(useCallback(() => { cargar(); }, []));
 
-  const nombre     = perfil?.usuario?.nombre || usuario?.nombre || '';
-  const avatarUri  = perfil?.usuario?.avatar || usuario?.avatar;
-  const xpTotal    = perfil?.estadisticas?.xpTotal ?? 0;
-  const ligaNombre = perfil?.estadisticas?.liga?.nombre ?? 'Amauta';
-  const ganadas    = perfil?.estadisticas?.insignias ?? [];
+  const nombre      = perfil?.usuario?.nombre || usuario?.nombre || '';
+  const avatarUri   = perfil?.usuario?.avatar || usuario?.avatar;
+  const xpTotal     = perfil?.estadisticas?.xpTotal ?? 0;
+  const ligaNombre  = perfil?.estadisticas?.liga?.nombre ?? 'Amauta';
+  const ganadas     = perfil?.estadisticas?.insignias ?? [];
   const claseActual = clases[0];
 
   const initials = nombre.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('');
@@ -59,7 +58,6 @@ export default function PerfilScreen({ navigation }) {
   const remaining = nextThreshold ? Math.max(nextThreshold - xpTotal, 0) : 0;
 
   const ganadosIds = new Set(ganadas.map(i => i.id));
-  const totalSlots = Math.max(todasInsig.length, 8);
 
   if (cargando) {
     return (
@@ -73,8 +71,8 @@ export default function PerfilScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
 
       {/* Header */}
-      <View style={{ height: 80, paddingHorizontal: 16, paddingTop: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#eaeaea' }}>
-        <Text style={{ fontSize: 18, fontWeight: '700', color: '#1a1a1a' }}>Mi perfil</Text>
+      <View style={s.header}>
+        <Text style={s.headerTitle}>Mi perfil</Text>
         <TouchableOpacity onPress={() => setShowConfig(true)}>
           <Feather name="settings" size={20} color="#1a1a1a" />
         </TouchableOpacity>
@@ -83,141 +81,128 @@ export default function PerfilScreen({ navigation }) {
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
 
         {/* Tarjeta de perfil */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-          {avatarUri
-            ? <Image source={{ uri: avatarUri }} style={{ width: 80, height: 80, borderRadius: 40, borderWidth: 1, borderColor: '#1a1a1a' }} />
-            : (
-              <View style={{ width: 80, height: 80, borderRadius: 40, borderWidth: 1, borderColor: '#1a1a1a', backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 26, fontWeight: '700', color: '#666' }}>{initials}</Text>
-              </View>
-            )
-          }
+        <View style={s.perfilRow}>
+          {avatarUri ? (
+            <Image source={{ uri: avatarUri }} style={s.avatar} />
+          ) : (
+            <View style={[s.avatar, s.avatarFallback]}>
+              <Text style={s.avatarInitials}>{initials}</Text>
+            </View>
+          )}
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: '#1a1a1a', marginBottom: 4 }}>{nombre}</Text>
+            <Text style={s.nombre}>{nombre}</Text>
             {claseActual ? (
-              <Text style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>
-                {claseActual.nombre}
-                {claseActual.curso ? ` · ${claseActual.curso}` : ''}
+              <Text style={s.claseText}>
+                {claseActual.nombre}{claseActual.curso ? ` · ${claseActual.curso}` : ''}
               </Text>
             ) : null}
-            <View style={{ alignSelf: 'flex-start', borderWidth: 1, borderColor: '#1a1a1a', borderRadius: 20, paddingVertical: 4, paddingHorizontal: 10 }}>
-              <Text style={{ fontSize: 11, fontWeight: '700', color: '#1a1a1a' }}>🏆 Liga {ligaNombre}</Text>
+            <View style={s.ligaPill}>
+              <Feather name="award" size={11} color="#1a1a1a" style={{ marginRight: 4 }} />
+              <Text style={s.ligaPillText}>Liga {ligaNombre}</Text>
             </View>
           </View>
         </View>
 
         {/* Tarjeta XP */}
-        <View style={{ borderWidth: 1, borderColor: '#1a1a1a', borderRadius: 16, padding: 16, marginBottom: 24 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-            <Text style={{ fontSize: 12, color: '#666' }}>XP total</Text>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: '#1a1a1a' }}>
+        <View style={s.xpCard}>
+          <View style={s.xpRow}>
+            <Text style={s.xpLabel}>XP total</Text>
+            <Text style={s.xpValue}>
               {nextThreshold ? `${xpTotal} / ${nextThreshold} XP` : `${xpTotal} XP`}
             </Text>
           </View>
-          <View style={{ height: 8, backgroundColor: '#f0f0f0', borderRadius: 4, marginBottom: 8 }}>
-            <View style={{ width: `${Math.round(progress * 100)}%`, height: '100%', backgroundColor: '#1b5e20', borderRadius: 4 }} />
+          <View style={s.progressBg}>
+            <View style={[s.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
           </View>
-          {nextNombre
-            ? <Text style={{ fontSize: 11, color: '#999' }}>{remaining} XP para subir a 🏆 {nextNombre}</Text>
-            : <Text style={{ fontSize: 11, color: '#999' }}>Has alcanzado el nivel máximo</Text>
-          }
+          {nextNombre ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Feather name="trending-up" size={11} color="#999" />
+              <Text style={s.xpHint}>{remaining} XP para subir a {nextNombre}</Text>
+            </View>
+          ) : (
+            <Text style={s.xpHint}>Has alcanzado el nivel maximo</Text>
+          )}
         </View>
 
         {/* Insignias */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <Text style={{ fontSize: 15, fontWeight: '700', color: '#1a1a1a' }}>Mis insignias</Text>
+        <View style={s.sectionHeader}>
+          <Text style={s.sectionTitle}>Mis insignias</Text>
           <TouchableOpacity onPress={() => navigation.navigate('MiColeccion')}>
-            <Text style={{ fontSize: 12, color: '#666' }}>Ver todas →</Text>
+            <Text style={s.verTodas}>Ver todas</Text>
           </TouchableOpacity>
         </View>
 
-        {ganadas.length === 0 && todasInsig.length === 0 ? (
-          <Text style={{ fontSize: 14, color: '#666', fontStyle: 'italic', lineHeight: 20 }}>
-            Aún no tienes insignias. Completa módulos para ganarlas.
+        {todasInsig.length === 0 ? (
+          <Text style={s.emptyText}>
+            Aun no tienes insignias. Completa modulos para ganarlas.
           </Text>
         ) : (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-            {todasInsig.map((ins, i) => {
+          <View style={s.badgeGrid}>
+            {todasInsig.slice(0, 8).map((ins) => {
               const desbloqueada = ganadosIds.has(ins.id);
+              const pngSource    = getBadgePng(ins); // objeto completo → criterio primero
+
               return (
-                <View
+                <TouchableOpacity
                   key={ins.id}
-                  style={{
-                    width: '22%', aspectRatio: 1, borderRadius: 12,
-                    backgroundColor: desbloqueada ? '#fff' : '#f5f5f5',
-                    borderWidth: desbloqueada ? 1 : 0,
-                    borderColor: '#1a1a1a',
-                    justifyContent: 'center', alignItems: 'center',
-                  }}
+                  style={[s.badgeSlot, desbloqueada ? s.badgeSlotOn : s.badgeSlotOff]}
+                  onPress={() => navigation.navigate('MiColeccion')}
+                  activeOpacity={0.75}
                 >
-                  <Text style={{ fontSize: 20, color: desbloqueada ? '#000' : '#ccc' }}>
-                    {desbloqueada ? (INSIGNIA_ICONS[i] || '⭐') : '?'}
-                  </Text>
-                </View>
+                  {pngSource && desbloqueada ? (
+                    <Image source={pngSource} style={s.badgeImg} resizeMode="contain" />
+                  ) : pngSource ? (
+                    <View style={s.badgeImgLockWrap}>
+                      <Image source={pngSource} style={[s.badgeImg, { opacity: 0.2 }]} resizeMode="contain" />
+                      <View style={StyleSheet.absoluteFill} >
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                          <Feather name="lock" size={14} color="#999" />
+                        </View>
+                      </View>
+                    </View>
+                  ) : (
+                    <Feather
+                      name={desbloqueada ? 'award' : 'lock'}
+                      size={20}
+                      color={desbloqueada ? '#1a1a1a' : '#ccc'}
+                    />
+                  )}
+                </TouchableOpacity>
               );
             })}
-            {Array.from({ length: Math.max(0, 8 - todasInsig.length) }).map((_, i) => (
-              <View key={`lock-${i}`} style={{ width: '22%', aspectRatio: 1, borderRadius: 12, backgroundColor: '#f5f5f5', justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 20, color: '#ccc' }}>?</Text>
-              </View>
-            ))}
           </View>
         )}
 
-        {/* Acceso a documentos de clase */}
-        <View style={{
-          borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 16,
-          marginTop: 24, overflow: 'hidden',
-        }}>
-          <Text style={{
-            fontSize: 13, fontWeight: '700', color: '#1a1a1a',
-            paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12,
-            borderBottomWidth: 1, borderBottomColor: '#e0e0e0',
-          }}>
-            Documentos de clase
-          </Text>
+        {/* Documentos de clase */}
+        <View style={s.docsCard}>
+          <Text style={s.docsTitle}>Documentos de clase</Text>
 
           <TouchableOpacity
             onPress={() => navigation.navigate('Silabo')}
-            style={{
-              flexDirection: 'row', alignItems: 'center',
-              paddingVertical: 14, paddingHorizontal: 16,
-              borderBottomWidth: 1, borderBottomColor: '#f0f0f0',
-            }}
+            style={s.docRow}
             activeOpacity={0.7}
           >
-            <View style={{
-              width: 36, height: 36, borderRadius: 8,
-              backgroundColor: '#f5f5f5', borderWidth: 1, borderColor: '#e8e8e8',
-              justifyContent: 'center', alignItems: 'center', marginRight: 14,
-            }}>
+            <View style={s.docIcon}>
               <Feather name="file-text" size={16} color="#333" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: '#1a1a1a' }}>Sílabo</Text>
-              <Text style={{ fontSize: 11, color: '#999', marginTop: 1 }}>Programa de la clase</Text>
+              <Text style={s.docName}>Silabo</Text>
+              <Text style={s.docSub}>Programa de la clase</Text>
             </View>
             <Feather name="chevron-right" size={16} color="#bbb" />
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => navigation.navigate('Material')}
-            style={{
-              flexDirection: 'row', alignItems: 'center',
-              paddingVertical: 14, paddingHorizontal: 16,
-            }}
+            style={[s.docRow, { borderBottomWidth: 0 }]}
             activeOpacity={0.7}
           >
-            <View style={{
-              width: 36, height: 36, borderRadius: 8,
-              backgroundColor: '#f5f5f5', borderWidth: 1, borderColor: '#e8e8e8',
-              justifyContent: 'center', alignItems: 'center', marginRight: 14,
-            }}>
+            <View style={s.docIcon}>
               <Feather name="book-open" size={16} color="#333" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: '#1a1a1a' }}>Material académico</Text>
-              <Text style={{ fontSize: 11, color: '#999', marginTop: 1 }}>Archivos y documentos</Text>
+              <Text style={s.docName}>Material academico</Text>
+              <Text style={s.docSub}>Archivos y documentos</Text>
             </View>
             <Feather name="chevron-right" size={16} color="#bbb" />
           </TouchableOpacity>
@@ -225,38 +210,38 @@ export default function PerfilScreen({ navigation }) {
 
       </ScrollView>
 
-      {/* Panel de configuración */}
+      {/* Panel de configuracion */}
       <Modal visible={showConfig} transparent animationType="slide" onRequestClose={() => setShowConfig(false)}>
         <TouchableOpacity
           style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}
           activeOpacity={1}
           onPress={() => setShowConfig(false)}
         >
-          <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40 }}>
-            <View style={{ width: 40, height: 4, backgroundColor: '#ddd', borderRadius: 2, alignSelf: 'center', marginBottom: 20 }} />
+          <View style={s.configSheet}>
+            <View style={s.configHandle} />
 
             <TouchableOpacity
-              style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#eaeaea', gap: 14 }}
+              style={s.configRow}
               onPress={() => { setShowConfig(false); navigation.navigate('PersonalizarPerfil'); }}
             >
               <Feather name="edit-2" size={18} color="#1a1a1a" />
-              <Text style={{ fontSize: 16, color: '#1a1a1a', fontWeight: '500' }}>Personalizar perfil</Text>
+              <Text style={s.configText}>Personalizar perfil</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#eaeaea', gap: 14 }}
+              style={s.configRow}
               onPress={() => { setShowConfig(false); navigation.navigate('UnirseAClase'); }}
             >
               <Feather name="users" size={18} color="#1a1a1a" />
-              <Text style={{ fontSize: 16, color: '#1a1a1a', fontWeight: '500' }}>Unirse a una clase</Text>
+              <Text style={s.configText}>Unirse a una clase</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 16, gap: 14 }}
+              style={[s.configRow, { borderBottomWidth: 0 }]}
               onPress={() => { setShowConfig(false); setTimeout(() => setShowLogout(true), 300); }}
             >
               <Feather name="log-out" size={18} color="#cc0000" />
-              <Text style={{ fontSize: 16, color: '#cc0000', fontWeight: '500' }}>Cerrar sesión</Text>
+              <Text style={[s.configText, { color: '#cc0000' }]}>Cerrar sesion</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -270,3 +255,49 @@ export default function PerfilScreen({ navigation }) {
     </View>
   );
 }
+
+const s = StyleSheet.create({
+  header:           { height: 80, paddingHorizontal: 16, paddingTop: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#eaeaea' },
+  headerTitle:      { fontSize: 18, fontWeight: '700', color: '#1a1a1a' },
+
+  perfilRow:        { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 24 },
+  avatar:           { width: 80, height: 80, borderRadius: 40, borderWidth: 1, borderColor: '#1a1a1a' },
+  avatarFallback:   { backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' },
+  avatarInitials:   { fontSize: 26, fontWeight: '700', color: '#666' },
+  nombre:           { fontSize: 18, fontWeight: '700', color: '#1a1a1a', marginBottom: 4 },
+  claseText:        { fontSize: 13, color: '#666', marginBottom: 6 },
+  ligaPill:         { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#1a1a1a', borderRadius: 20, paddingVertical: 4, paddingHorizontal: 10 },
+  ligaPillText:     { fontSize: 11, fontWeight: '700', color: '#1a1a1a' },
+
+  xpCard:           { borderWidth: 1, borderColor: '#1a1a1a', borderRadius: 16, padding: 16, marginBottom: 24 },
+  xpRow:            { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  xpLabel:          { fontSize: 12, color: '#666' },
+  xpValue:          { fontSize: 12, fontWeight: '700', color: '#1a1a1a' },
+  progressBg:       { height: 8, backgroundColor: '#f0f0f0', borderRadius: 4, marginBottom: 8 },
+  progressFill:     { height: '100%', backgroundColor: '#1b5e20', borderRadius: 4 },
+  xpHint:           { fontSize: 11, color: '#999' },
+
+  sectionHeader:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  sectionTitle:     { fontSize: 15, fontWeight: '700', color: '#1a1a1a' },
+  verTodas:         { fontSize: 12, color: '#666' },
+  emptyText:        { fontSize: 14, color: '#666', fontStyle: 'italic', lineHeight: 20 },
+
+  badgeGrid:        { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4 },
+  badgeSlot:        { width: '22%', aspectRatio: 1, borderRadius: 14, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
+  badgeSlotOn:      { backgroundColor: '#fff', borderWidth: 1, borderColor: '#1a1a1a' },
+  badgeSlotOff:     { backgroundColor: '#f5f5f5' },
+  badgeImg:         { width: '100%', height: '100%' },
+  badgeImgLockWrap: { width: '100%', height: '100%' },
+
+  docsCard:         { borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 16, marginTop: 24, overflow: 'hidden' },
+  docsTitle:        { fontSize: 13, fontWeight: '700', color: '#1a1a1a', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#e0e0e0' },
+  docRow:           { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  docIcon:          { width: 36, height: 36, borderRadius: 8, backgroundColor: '#f5f5f5', borderWidth: 1, borderColor: '#e8e8e8', justifyContent: 'center', alignItems: 'center', marginRight: 14 },
+  docName:          { fontSize: 14, fontWeight: '600', color: '#1a1a1a' },
+  docSub:           { fontSize: 11, color: '#999', marginTop: 1 },
+
+  configSheet:      { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40 },
+  configHandle:     { width: 40, height: 4, backgroundColor: '#ddd', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  configRow:        { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#eaeaea', gap: 14 },
+  configText:       { fontSize: 16, color: '#1a1a1a', fontWeight: '500' },
+});
