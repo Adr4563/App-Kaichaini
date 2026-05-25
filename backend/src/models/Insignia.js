@@ -4,7 +4,7 @@ class Insignia {
     this.nombre = data.nombre || '';
     this.descripcion = data.descripcion || '';
     this.criterio = data.criterio || '';
-    this.imagenUrl = data.imagenUrl || null;
+    this.imagenUrl = data.imagenUrl || data.imagenurl || null;
   }
 
   isValid() {
