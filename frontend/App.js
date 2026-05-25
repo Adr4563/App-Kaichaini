@@ -101,8 +101,8 @@ function AppStack() {
       <Stack.Screen name="UnirseAClase"         component={UnirseAClaseScreen} />
       <Stack.Screen name="Silabo"               component={SilaboScreen} />
       <Stack.Screen name="Material"             component={MaterialScreen} />
-      <Stack.Screen name="MiColeccion"          component={MiColeccionScreen} />           {/* H.U. 118 */}
-      <Stack.Screen name="InsigniaDesbloqueada" component={InsigniaDesbloqueadaScreen} />  {/* H.U. 109 */}
+      <Stack.Screen name="MiColeccion"          component={MiColeccionScreen} />
+      <Stack.Screen name="InsigniaDesbloqueada" component={InsigniaDesbloqueadaScreen} />
     </Stack.Navigator>
   );
 }
