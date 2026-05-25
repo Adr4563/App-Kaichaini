@@ -119,9 +119,8 @@ export default function RankingScreen() {
 
             let statusLabel = '';
             let statusColor = '#b5b5b5';
-            let badgeBg     = null;
 
-            if (esActual)  { statusLabel = 'aquí';     badgeBg = '#1a1a1a'; }
+            if (esActual)     { statusLabel = ''; }
             else if (esSuper) { statusLabel = 'superada'; }
             else if (esSig)   { statusLabel = 'siguiente'; statusColor = '#1e7e34'; }
 
@@ -145,13 +144,9 @@ export default function RankingScreen() {
                   </View>
                 </View>
 
-                {badgeBg ? (
-                  <View style={{ backgroundColor: badgeBg, borderRadius: 20, paddingVertical: 5, paddingHorizontal: 14 }}>
-                    <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>{statusLabel}</Text>
-                  </View>
-                ) : (
+                {statusLabel ? (
                   <Text style={[s.ligaItemStatus, { color: statusColor }]}>{statusLabel}</Text>
-                )}
+                ) : null}
               </View>
             );
           })}
