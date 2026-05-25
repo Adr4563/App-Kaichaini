@@ -27,6 +27,9 @@ import SilaboScreen               from './src/screens/student/SilaboScreen';
 import MaterialScreen             from './src/screens/student/MaterialScreen';
 import MiColeccionScreen          from './src/screens/student/MiColeccionScreen';          // H.U. 118
 import InsigniaDesbloqueadaScreen from './src/screens/student/InsigniaDesbloqueadaScreen'; // H.U. 109
+import EjercicioScreen            from './src/screens/student/EjercicioScreen';            // H.U. 309, 311, 312, 207
+import EvaluacionModuloScreen     from './src/screens/student/EvaluacionModuloScreen';     // H.U. 314
+import ConfigurarFeedbackScreen   from './src/screens/docente/ConfigurarFeedbackScreen';   // H.U. 207 (docente)
 
 const Stack = createNativeStackNavigator();
 const Tab   = createBottomTabNavigator();
@@ -103,6 +106,9 @@ function AppStack() {
       <Stack.Screen name="Material"             component={MaterialScreen} />
       <Stack.Screen name="MiColeccion"          component={MiColeccionScreen} />
       <Stack.Screen name="InsigniaDesbloqueada" component={InsigniaDesbloqueadaScreen} />
+      <Stack.Screen name="Ejercicio"            component={EjercicioScreen} />
+      <Stack.Screen name="EvaluacionModulo"     component={EvaluacionModuloScreen} />
+      <Stack.Screen name="ConfigurarFeedback"   component={ConfigurarFeedbackScreen} />
     </Stack.Navigator>
   );
 }

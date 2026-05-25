@@ -9,7 +9,7 @@ import {
   ActivityIndicator, StyleSheet, useWindowDimensions,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import api from '../../services/api';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -65,6 +65,7 @@ function calcularEstado(progreso, index, lista) {
 
 // ── Nodo del modulo (circulo estilo Duolingo) ─────────────────────────────────
 function ModuloNodo({ item, index, lista, screenWidth }) {
+  var navigation = useNavigation();
   var modulo  = item.modulo;
   var progreso = item.progreso;
   var estado  = calcularEstado(progreso, index, lista);
@@ -78,13 +79,25 @@ function ModuloNodo({ item, index, lista, screenWidth }) {
   var isLeft  = index % 2 === 0;
   var nodeSize = 72;
   var padding  = 36;
-  var nodeX    = isLeft ? padding : screenWidth - padding - nodeSize;
+
+  function handlePress() {
+    if (bloq) return;
+    navigation.navigate('Ejercicio', {
+      idModulo: modulo.id,
+      moduloNombre: modulo.nombre,
+    });
+  }
 
   return (
     <View>
       {/* Nodo */}
       <View style={[st.nodoRow, { justifyContent: isLeft ? 'flex-start' : 'flex-end' }]}>
-        <View style={{ alignItems: 'center' }}>
+        <TouchableOpacity
+          activeOpacity={bloq ? 1 : 0.75}
+          onPress={handlePress}
+          disabled={bloq}
+          style={{ alignItems: 'center' }}
+        >
           {/* Anillo exterior (pulsante visual para disponible) */}
           <View style={[
             st.ring,
@@ -138,7 +151,17 @@ function ModuloNodo({ item, index, lista, screenWidth }) {
               <Text style={st.progresoTxt}>{comp}/{total}</Text>
             </View>
           )}
-        </View>
+
+          {/* Indicador de tap para modulos disponibles */}
+          {(estado === 'disponible' || estado === 'en_progreso') && (
+            <View style={st.tapBadge}>
+              <Feather name="play" size={9} color="#ffffff" />
+              <Text style={st.tapBadgeText}>
+                {estado === 'completado' ? 'Repasar' : 'Iniciar'}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -506,4 +529,17 @@ var st = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#d1d5db',
   },
+
+  // Badge "Iniciar" bajo el nodo presionable
+  tapBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 6,
+    backgroundColor: '#111827',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  tapBadgeText: { fontSize: 9, fontWeight: '700', color: '#ffffff', letterSpacing: 0.4 },
 });
