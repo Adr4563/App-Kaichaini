@@ -5,7 +5,7 @@ class AuthController {
 
   async register(req, res, next) {
     try {
-      const { rol, nombre, correo, contrasena, codigoValidacion, avatar, colorTema, colegio } = req.body;
+      const { rol, nombre, correo, contrasena, codigoValidacion, avatar, colegio } = req.body;
 
       if (!rol || !['Estudiante', 'Docente'].includes(rol)) {
         return res.status(400).json({
@@ -25,7 +25,6 @@ class AuthController {
           correo,
           contrasena,
           avatar,
-          colorTema,
           colegio,
         });
       } else {
@@ -110,12 +109,11 @@ class AuthController {
   async updatePerfil(req, res, next) {
     try {
       const userId = req.user.id;
-      const { nombre, avatar, colorTema } = req.body;
+      const { nombre, avatar } = req.body;
 
       const usuario = await this.authService.updatePerfil(userId, {
         nombre,
         avatar,
-        colorTema,
       });
 
       res.status(200).json({

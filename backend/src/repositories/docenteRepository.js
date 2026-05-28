@@ -9,10 +9,9 @@ class DocenteRepository {
     const pool = this.database.getPool();
     const query = `
       INSERT INTO USUARIO (
-        id, nombre, correo, contrasena, rol, avatar, "codigoValidacion",
-        "intentosFallidos"
+        id, nombre, correo, contrasena, rol, avatar, "codigoValidacion"
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
 
@@ -25,7 +24,6 @@ class DocenteRepository {
         'Docente',
         docente.avatar || null,
         docente.codigoValidacion,
-        docente.intentosFallidos || 0,
       ]);
       return new Docente(rows[0]);
     } catch (error) {
@@ -104,14 +102,6 @@ class DocenteRepository {
     if (docenteData.contrasena !== undefined) {
       fields.push(`contrasena = $${paramCount++}`);
       values.push(docenteData.contrasena);
-    }
-    if (docenteData.intentosFallidos !== undefined) {
-      fields.push(`"intentosFallidos" = $${paramCount++}`);
-      values.push(docenteData.intentosFallidos);
-    }
-    if (docenteData.bloqueadoHasta !== undefined) {
-      fields.push(`"bloqueadoHasta" = $${paramCount++}`);
-      values.push(docenteData.bloqueadoHasta || null);
     }
     if (docenteData.resetPasswordToken !== undefined) {
       fields.push(`"resetPasswordToken" = $${paramCount++}`);

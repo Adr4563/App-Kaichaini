@@ -1,0 +1,160 @@
+@startuml Kaichaini_Clases_Sprint1
+
+skinparam linetype ortho
+
+title Kaichaini - Diagrama de Clases (Sprint 1)
+
+abstract class Usuario {
+  +UUID id
+  +String nombre
+  +String correo
+  -String contrasena
+  +String avatar
+  -String tokenJWT
+  +DateTime fechaRegistro
+  +iniciarSesion()
+  +cerrarSesion()
+  +recuperarContrasena()
+  +cambiarContrasena()
+}
+
+class Estudiante {
+  +String colegio
+  +registrar()
+  +personalizarPerfil()
+}
+
+class Docente {
+  +String codigoValidacion
+}
+
+class Clase {
+  +UUID id
+  +String nombre
+  +String codigoUnico
+  +String curso
+  +UUID idDocente
+  +generarCodigo()
+  +buscarPorCodigo()
+}
+
+class EstudianteClase {
+  +UUID idEstudiante
+  +UUID idClase
+  +DateTime fechaIngreso
+  +unirse()
+}
+
+class Silabo {
+  +UUID id
+  +UUID idClase
+  +String archivoUrl
+  +String contenido
+  +DateTime fechaSubida
+  +subir()
+}
+
+class Modulo {
+  +UUID id
+  +UUID idClase
+  +String nombre
+  +Integer orden
+  +Integer bimestre
+  +String estado
+  +desbloquear()
+  +verificarCompletado()
+}
+
+class Ejercicio {
+  +UUID id
+  +UUID idModulo
+  +String tipo
+  +String enunciado
+  -String respuestaCorrecta
+  +String opciones
+  +responder()
+  +obtenerListaEjerciciosPorModulo()
+  +contarEjerciciosPorModulo()
+}
+
+class Respuesta {
+  +UUID id
+  +UUID idEstudiante
+  +UUID idEjercicio
+  +String respuesta
+  +Boolean esCorrecta
+  +DateTime fecha
+  +registrar()
+  +obtenerRetroalimentacion()
+  +contarEjerciciosCorrectasPorModulo()
+}
+
+class XP {
+  +UUID id
+  +UUID idEstudiante
+  +Integer puntosTotal
+  +otorgar()
+  +calcularTotal()
+}
+
+class Liga {
+  +UUID id
+  +String nombre
+  +Integer umbralMinimo
+  +Integer umbralMaximo
+  +obtenerLigaPorPuntos()
+}
+
+class Insignia {
+  +UUID id
+  +String nombre
+  +String descripcion
+  +String criterio
+  +String imagenUrl
+  +listar()
+}
+
+class EstudianteInsignia {
+  +UUID idEstudiante
+  +UUID idInsignia
+  +DateTime fechaDesbloqueo
+  +desbloquear()
+  +verificarCriterio()
+}
+
+class Material {
+  +UUID id
+  +UUID idClase
+  +UUID idModulo
+  +String nombre
+  +String archivoUrl
+  +String tipo
+  +buscar()
+  +descargar()
+}
+
+Usuario <|-- Estudiante
+Usuario <|-- Docente
+
+Docente "1" --> "0..*" Clase : gestiona
+Estudiante "1" --> "0..*" EstudianteClase : pertenece a
+EstudianteClase "0..*" --> "1" Clase : pertenece a
+
+Clase "1" --> "1" Silabo : tiene
+Clase "1" --> "0..*" Modulo : tiene
+Clase "1" --> "0..*" Material : tiene
+
+Modulo "1" --> "0..*" Ejercicio : tiene
+
+Ejercicio "1" --> "0..*" Respuesta : recibe
+Estudiante "1" --> "0..*" Respuesta : genera
+
+Estudiante "1" --> "0..*" XP : acumula
+Estudiante "1" --> "1" Liga : pertenece a
+
+Estudiante "1" --> "0..*" EstudianteInsignia : obtiene
+EstudianteInsignia "0..*" --> "1" Insignia : referencia
+
+EstudianteInsignia "0..*" --> "1" XP : consulta
+
+@enduml

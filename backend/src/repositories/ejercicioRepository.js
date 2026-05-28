@@ -68,8 +68,16 @@ class EjercicioRepository {
   }
 
   async contarByModulo(idModulo) {
+    // Solo cuenta ejercicios válidos (los que ve el estudiante en el frontend)
     const pool = this.database.getPool();
-    const query = 'SELECT COUNT(*) as count FROM ejercicio WHERE idmodulo = $1';
+    const query = `
+      SELECT COUNT(*) AS count
+      FROM ejercicio
+      WHERE idmodulo = $1
+        AND opciones IS NOT NULL
+        AND opciones != '[]'
+        AND tipo IN ('seleccion_multiple', 'clic_numero')
+    `;
 
     try {
       const { rows } = await pool.query(query, [idModulo]);

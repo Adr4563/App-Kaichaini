@@ -106,7 +106,7 @@ export default function SilaboScreen({ navigation }) {
                   borderColor:     tabActivo === i ? '#1a1a1a' : '#e0e0e0',
                 }}
               >
-                <Text style={{ fontSize: 15 }}>📚</Text>
+                <Feather name="book" size={14} color={tabActivo === i ? '#fff' : '#666'} />
                 <Text style={{
                   fontSize: 13, fontWeight: '600',
                   color: tabActivo === i ? '#fff' : '#666',
@@ -229,7 +229,7 @@ export default function SilaboScreen({ navigation }) {
         ) : (
           /* Estado vacío */
           <View style={{ alignItems: 'center', paddingVertical: 50 }}>
-            <Text style={{ fontSize: 48, marginBottom: 14 }}>📄</Text>
+            <Feather name="file-text" size={48} color="#d1d5db" style={{ marginBottom: 14 }} />
             <Text style={{ fontSize: 16, fontWeight: '700', color: '#1a1a1a', marginBottom: 6 }}>
               Sin sílabo aún
             </Text>

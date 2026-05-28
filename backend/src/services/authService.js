@@ -4,7 +4,7 @@ const { hashPassword, comparePassword } = require('../utils/hash');
 const { generateToken } = require('../utils/jwt');
 const { validatePassword, validateEmail, validateNombre } = require('../utils/validators');
 const { v4: uuidv4 } = require('uuid');
-const { ROLES, XP_INICIAL_ESTUDIANTE, ERROR_MESSAGES, SUCCESS_MESSAGES, CUENTA_BLOQUEADA_MINUTOS, MAX_INTENTOS_FALLIDOS } = require('../utils/constants');
+const { ROLES, XP_INICIAL_ESTUDIANTE, ERROR_MESSAGES, SUCCESS_MESSAGES } = require('../utils/constants');
 
 class AuthService {
   constructor(estudianteRepository, docenteRepository, xpRepository, ligaRepository) {
@@ -51,9 +51,7 @@ class AuthService {
       contrasena: hashedPassword,
       rol: ROLES.ESTUDIANTE,
       avatar: userData.avatar || null,
-      colorTema: userData.colorTema || 'light',
       colegio: userData.colegio || null,
-      intentosFallidos: 0,
     };
 
     const estudiante = new Estudiante(estudianteData);
@@ -123,7 +121,6 @@ class AuthService {
       rol: ROLES.DOCENTE,
       avatar: userData.avatar || null,
       codigoValidacion: userData.codigoValidacion,
-      intentosFallidos: 0,
     };
 
     const docente = new Docente(docenteData);
@@ -150,39 +147,13 @@ class AuthService {
       throw new Error('Credenciales inválidas');
     }
 
-    // Verificar si cuenta está bloqueada (H.U. 001 - Bloqueo por intentos fallidos)
-    if (usuario.bloqueadoHasta && new Date(usuario.bloqueadoHasta) > new Date()) {
-      throw new Error('Cuenta bloqueada por demasiados intentos. Intenta en 15 minutos');
-    }
-
     // Comparar password
     const isPasswordValid = await comparePassword(contrasena, usuario.contrasena);
     if (!isPasswordValid) {
-      // Incrementar intentos fallidos
-      const repository = isEstudiante ? this.estudianteRepository : this.docenteRepository;
-      const intentosFallidos = (usuario.intentosFallidos || 0) + 1;
-
-      if (intentosFallidos >= MAX_INTENTOS_FALLIDOS) {
-        // Bloquear cuenta por 15 minutos
-        const bloqueadoHasta = new Date(Date.now() + CUENTA_BLOQUEADA_MINUTOS * 60 * 1000);
-        await repository.update(usuario.id, {
-          intentosFallidos,
-          bloqueadoHasta
-        });
-        throw new Error('Cuenta bloqueada por demasiados intentos. Intenta en 15 minutos');
-      } else {
-        await repository.update(usuario.id, { intentosFallidos });
-      }
-
       throw new Error('Credenciales inválidas');
     }
 
-    // Resetear intentos fallidos en login exitoso
     const repository = isEstudiante ? this.estudianteRepository : this.docenteRepository;
-    await repository.update(usuario.id, {
-      intentosFallidos: 0,
-      bloqueadoHasta: null
-    });
 
     // Generar JWT
     const payload = {

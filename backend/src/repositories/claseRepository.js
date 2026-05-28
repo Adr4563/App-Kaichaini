@@ -53,7 +53,7 @@ class ClaseRepository {
 
   async findByDocente(idDocente) {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM CLASE WHERE "idDocente" = $1 ORDER BY "fechaCreacion" DESC';
+    const query = 'SELECT * FROM CLASE WHERE "idDocente" = $1 ORDER BY nombre ASC';
 
     try {
       const { rows } = await pool.query(query, [idDocente]);
@@ -65,7 +65,7 @@ class ClaseRepository {
 
   async findAll() {
     const pool = this.database.getPool();
-    const query = 'SELECT * FROM CLASE ORDER BY "fechaCreacion" DESC';
+    const query = 'SELECT * FROM CLASE ORDER BY nombre ASC';
 
     try {
       const { rows } = await pool.query(query);

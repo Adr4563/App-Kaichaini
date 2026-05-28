@@ -33,10 +33,10 @@ function CirculoPuntaje({ porcentaje }) {
     porcentaje >= 50 ? '#f59e0b' :
     '#ef4444';
 
-  const emoji =
-    porcentaje >= 80 ? '🏆' :
-    porcentaje >= 50 ? '💪' :
-    '📚';
+  const iconoNombre =
+    porcentaje >= 80 ? 'award' :
+    porcentaje >= 50 ? 'trending-up' :
+    'book-open';
 
   return (
     <Animated.View
@@ -45,7 +45,7 @@ function CirculoPuntaje({ porcentaje }) {
         { borderColor: color, transform: [{ scale: scaleAnim }], opacity: opacAnim },
       ]}
     >
-      <Text style={st.circuloEmoji}>{emoji}</Text>
+      <Feather name={iconoNombre} size={28} color={color} style={{ marginBottom: 4 }} />
       <Text style={[st.circuloPct, { color }]}>{Math.round(porcentaje)}%</Text>
       <Text style={st.circuloLabel}>puntaje</Text>
     </Animated.View>
@@ -180,7 +180,11 @@ export default function EvaluacionModuloScreen({ route, navigation }) {
               <Text style={st.bannerTitle}>¡Módulo superado!</Text>
               <Text style={st.bannerSub}>El siguiente módulo se ha desbloqueado.</Text>
             </View>
-            <Text style={st.bannerStars}>⭐⭐⭐</Text>
+            <View style={{ flexDirection: 'row', gap: 3 }}>
+              <Feather name="star" size={16} color="#f59e0b" />
+              <Feather name="star" size={16} color="#f59e0b" />
+              <Feather name="star" size={16} color="#f59e0b" />
+            </View>
           </Animated.View>
         )}
 
@@ -272,8 +276,23 @@ export default function EvaluacionModuloScreen({ route, navigation }) {
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <View style={st.footer}>
+        {/* Reintentar módulo */}
         <TouchableOpacity
-          style={st.botonPrimario}
+          style={st.botonSecundario}
+          onPress={() => navigation.replace('Ejercicio', {
+            idModulo,
+            moduloNombre: moduloNombre || modulo.nombre,
+            reintentar: true,
+          })}
+          activeOpacity={0.85}
+        >
+          <Feather name="refresh-cw" size={16} color="#374151" style={{ marginRight: 8 }} />
+          <Text style={st.botonSecundarioText}>Reintentar módulo</Text>
+        </TouchableOpacity>
+
+        {/* Volver al mapa */}
+        <TouchableOpacity
+          style={[st.botonPrimario, { marginTop: 10 }]}
           onPress={() => navigation.navigate('Tabs')}
           activeOpacity={0.85}
         >
@@ -459,6 +478,16 @@ const st = StyleSheet.create({
     paddingVertical: 17,
   },
   botonPrimarioText: { fontSize: 16, fontWeight: '800', color: '#ffffff', letterSpacing: 0.2 },
+
+  botonSecundario: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 16,
+    paddingVertical: 15,
+  },
+  botonSecundarioText: { fontSize: 15, fontWeight: '700', color: '#374151', letterSpacing: 0.1 },
 
   // Loading / error
   loadingText: { marginTop: 14, fontSize: 14, color: '#6b7280', textAlign: 'center' },

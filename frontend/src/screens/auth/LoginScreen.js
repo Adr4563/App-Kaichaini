@@ -3,16 +3,18 @@ import {
   View, Text, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { s, C } from '../../styles/screens/LoginScreen.styles';
 
 export default function LoginScreen({ navigation }) {
   const { login, expiredMessage, setExpiredMessage } = useAuth();
-  const [correo,     setCorreo]     = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [cargando,   setCargando]   = useState(false);
-  const [error,      setError]      = useState('');
+  const [correo,          setCorreo]          = useState('');
+  const [contrasena,      setContrasena]      = useState('');
+  const [cargando,        setCargando]        = useState(false);
+  const [error,           setError]           = useState('');
+  const [mostrarPassword, setMostrarPassword] = useState(false);
 
   const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
 
@@ -62,13 +64,22 @@ export default function LoginScreen({ navigation }) {
 
         <View style={s.formGroup}>
           <Text style={s.label}>Contraseña</Text>
-          <TextInput
-            style={s.input}
-            value={contrasena}
-            onChangeText={setContrasena}
-            secureTextEntry
-            autoCapitalize="none"
-          />
+          <View style={s.inputWrapper}>
+            <TextInput
+              style={s.input}
+              value={contrasena}
+              onChangeText={setContrasena}
+              secureTextEntry={!mostrarPassword}
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              onPress={() => setMostrarPassword(v => !v)}
+              style={{ position: 'absolute', right: 14 }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Feather name={mostrarPassword ? 'eye-off' : 'eye'} size={18} color="#999" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <TouchableOpacity style={s.forgotRow} onPress={() => navigation.navigate('ForgotPassword')}>

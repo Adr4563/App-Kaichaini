@@ -45,13 +45,14 @@ class EjercicioController {
 
   async create(req, res, next) {
     try {
-      const { idModulo, tipo, enunciado, respuestaCorrecta } = req.body;
+      const { idModulo, tipo, enunciado, respuestaCorrecta, opciones } = req.body;
 
       const ejercicio = await this.ejercicioService.createEjercicio({
         idModulo,
         tipo,
         enunciado,
         respuestaCorrecta,
+        opciones,
       });
 
       res.status(201).json({
@@ -67,12 +68,13 @@ class EjercicioController {
   async update(req, res, next) {
     try {
       const { id } = req.params;
-      const { tipo, enunciado, respuestaCorrecta } = req.body;
+      const { tipo, enunciado, respuestaCorrecta, opciones } = req.body;
 
       await this.ejercicioService.updateEjercicio(id, {
         tipo,
         enunciado,
         respuestaCorrecta,
+        opciones,
       });
 
       const ejercicioActualizado = await this.ejercicioService.getEjercicioById(id);

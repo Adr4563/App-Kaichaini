@@ -19,7 +19,7 @@ class RespuestaService {
     this.insigniaService = insigniaService;
   }
 
-  async responder(idEstudiante, idEjercicio, respuestaDada) {
+  async responder(idEstudiante, idEjercicio, respuestaDada, reintentar = false) {
     // H.U. 309, 311, 312 - CORE del sistema de gamificación
     // 1. Obtener ejercicio
     const ejercicio = await this.ejercicioRepository.findById(idEjercicio);
@@ -27,12 +27,16 @@ class RespuestaService {
       throw new Error('Ejercicio no encontrado');
     }
 
-    // 2. Comparar respuesta (normalizar: trim, lowercase)
+    // 2. Verificar si ya fue respondido correctamente (para no duplicar XP al reintentar)
+    const yaCorrectoAntes = await this.respuestaRepository.yaRespondioCorrectamente(idEstudiante, idEjercicio);
+
+    // 3. Comparar respuesta (normalizar: trim, lowercase)
     const respuestaCorrecta = ejercicio.respuestaCorrecta.trim().toLowerCase();
     const respuestaEstudiante = respuestaDada.trim().toLowerCase();
     const esCorrecta = respuestaCorrecta === respuestaEstudiante;
 
-    // 3. Guardar respuesta
+
+    // 4. Guardar respuesta (siempre se registra el intento)
     const respuestaData = {
       id: uuidv4(),
       idEstudiante,
@@ -49,14 +53,21 @@ class RespuestaService {
     let ligaActualizada = null;
 
     if (esCorrecta) {
-      // 4. Si correcta: otorgar XP según tipo de ejercicio
-      const xpPorEste = XP_POR_TIPO_EJERCICIO[ejercicio.tipo] || 10;
-      xpGanado = xpPorEste;
+      // 5. Solo otorgar XP si: primera vez correcta Y no es un reintento de módulo
+      if (!yaCorrectoAntes && !reintentar) {
+        const xpPorEste = XP_POR_TIPO_EJERCICIO[ejercicio.tipo] || 10;
+        xpGanado = xpPorEste;
+      }
 
-      // Otorgar XP y actualizar liga
-      const resultado = await this.xpService.otorgarYActualizarLiga(idEstudiante, xpGanado);
-      const xpTotal = resultado.xpTotal;
-      ligaActualizada = resultado.liga;
+      // Otorgar XP y actualizar liga (solo si hay XP que otorgar)
+      let xpTotal;
+      if (xpGanado > 0) {
+        const resultado = await this.xpService.otorgarYActualizarLiga(idEstudiante, xpGanado);
+        xpTotal = resultado.xpTotal;
+        ligaActualizada = resultado.liga;
+      } else {
+        xpTotal = await this.xpService.getXPTotal(idEstudiante);
+      }
 
       // 5. Calcular progreso del módulo
       const modulo = await this.moduloRepository.findById(ejercicio.idModulo);
@@ -83,10 +94,17 @@ class RespuestaService {
         }
       }
 
-      // 7. Si módulo ≥80% aciertos: otorgar bono XP
-      if (porcentajeAciertos >= 80) {
-        await this.xpService.otorgarYActualizarLiga(idEstudiante, XP_BONO_MODULO_COMPLETADO);
-        xpGanado += XP_BONO_MODULO_COMPLETADO;
+      // 7. Bono XP al cruzar 80% por PRIMERA vez
+      // Solo aplica si este ejercicio se responde correctamente por primera vez
+      // y el porcentaje recién supera 80 (antes estaba debajo)
+      if (!yaCorrectoAntes) {
+        const porcentajeAntes = totalEjercicios > 0
+          ? ((correctas - 1) / totalEjercicios) * 100
+          : 0;
+        if (porcentajeAntes < 80 && porcentajeAciertos >= 80) {
+          await this.xpService.otorgarYActualizarLiga(idEstudiante, XP_BONO_MODULO_COMPLETADO);
+          xpGanado += XP_BONO_MODULO_COMPLETADO;
+        }
       }
 
       // 8. Verificar y desbloquear insignias
@@ -167,21 +185,33 @@ class RespuestaService {
 
   async getRetroalimentacionModulo(idEstudiante, idModulo) {
     // H.U. 207 - Obtener retroalimentación de un módulo
+    // Agrupa por ejercicio para que los reintentos no inflen los conteos
     const respuestas = await this.respuestaRepository.findByEstudianteModulo(
       idEstudiante,
       idModulo
     );
 
-    const correctas = respuestas.filter(r => r.esCorrecta).length;
-    const total = respuestas.length;
-    const errores = total - correctas;
+    // Un ejercicio = correcto si tuvo AL MENOS UNA respuesta correcta
+    const ejerciciosMap = new Map(); // idEjercicio -> boolean (alguna vez correcto)
+    for (const r of respuestas) {
+      if (!ejerciciosMap.has(r.idEjercicio)) {
+        ejerciciosMap.set(r.idEjercicio, false);
+      }
+      if (r.esCorrecta) {
+        ejerciciosMap.set(r.idEjercicio, true);
+      }
+    }
+
+    const total    = ejerciciosMap.size;
+    const correctas = [...ejerciciosMap.values()].filter(v => v).length;
+    const errores   = total - correctas;
 
     return {
-      totalRespuestas: total,
-      respuestasCorrectas: correctas,
-      respuestasIncorrectas: errores,
-      porcentajeAciertos: total > 0 ? (correctas / total) * 100 : 0,
-      retroalimentacion: this.getRetroalimentacion(correctas, total),
+      totalRespuestas:        total,
+      respuestasCorrectas:    correctas,
+      respuestasIncorrectas:  errores,
+      porcentajeAciertos:     total > 0 ? (correctas / total) * 100 : 0,
+      retroalimentacion:      this.getRetroalimentacion(correctas, total),
     };
   }
 

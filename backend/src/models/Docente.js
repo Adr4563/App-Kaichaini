@@ -12,8 +12,6 @@ class Docente {
     this.fechaRegistro = data.fechaRegistro || new Date();
 
     // Campos de seguridad
-    this.intentosFallidos = data.intentosFallidos || 0;
-    this.bloqueadoHasta = data.bloqueadoHasta || null;
     this.resetPasswordToken = data.resetPasswordToken || null;
     this.resetPasswordExpires = data.resetPasswordExpires || null;
   }

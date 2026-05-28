@@ -1,19 +1,23 @@
 class User {
   constructor(data = {}) {
     this.id = data.id || null;
-    this.name = data.name || '';
-    this.email = data.email || '';
-    this.password = data.password || '';
-    this.createdAt = data.createdAt || new Date();
-    this.updatedAt = data.updatedAt || new Date();
+    this.nombre = data.nombre || '';
+    this.correo = data.correo || '';
+    this.contrasena = data.contrasena || '';
+    this.rol = data.rol || null;
+    this.avatar = data.avatar || null;
+    this.tokenJWT = data.tokenJWT || null;
+    this.fechaRegistro = data.fechaRegistro || new Date();
+    this.resetPasswordToken = data.resetPasswordToken || null;
+    this.resetPasswordExpires = data.resetPasswordExpires || null;
   }
 
   isValid() {
-    return this.name && this.email && this.password;
+    return this.nombre && this.correo && this.contrasena;
   }
 
   toJSON() {
-    const { password, ...user } = this;
+    const { contrasena, tokenJWT, ...user } = this;
     return user;
   }
 }

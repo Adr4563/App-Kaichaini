@@ -177,7 +177,7 @@ function EjercicioClicNumero({ opciones, seleccionada, esCorrecta, confirmado, o
 
 // ── Pantalla principal ─────────────────────────────────────────────────────────
 export default function EjercicioScreen({ route, navigation }) {
-  const { idModulo, moduloNombre } = route.params || {};
+  const { idModulo, moduloNombre, reintentar = false } = route.params || {};
 
   // ── Estado ──────────────────────────────────────────────────────────────────
   const [ejercicios,   setEjercicios]  = useState([]);
@@ -203,6 +203,18 @@ export default function EjercicioScreen({ route, navigation }) {
       setError(null);
       const res = await api.get('/ejercicios', { params: { idModulo } });
       const todos = (res.data && res.data.data) || [];
+
+      // Sin ejercicios disponibles en este módulo (aún no tienen opciones)
+      if (todos.length === 0) {
+        setError('Este módulo no tiene ejercicios disponibles todavía.\nEl docente debe completar los ejercicios.');
+        return;
+      }
+
+      // En modo reintentar se muestran todos; si no, solo los pendientes
+      if (reintentar) {
+        setEjercicios(todos);
+        return;
+      }
 
       // Solo los no respondidos (H.U. 309)
       const pendientes = todos.filter(e => !e.respondido);
@@ -248,6 +260,7 @@ export default function EjercicioScreen({ route, navigation }) {
       const res = await api.post('/respuestas', {
         idEjercicio: ejercicio.id,
         respuesta: seleccionada,
+        reintentar,
       });
 
       const data = res.data && res.data.data;
@@ -441,7 +454,7 @@ export default function EjercicioScreen({ route, navigation }) {
           </View>
         )}
 
-        <View style={{ height: 110 }} />
+        <View style={{ height: 178 }} />
       </ScrollView>
 
       {/* ── XP flotante animado (H.U. 311, 312) ──────────────────────────── */}
@@ -510,19 +523,19 @@ const st = StyleSheet.create({
   // Header
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     backgroundColor: '#ffffff',
-    paddingTop: Platform.OS === 'ios' ? 8 : 14,
-    paddingBottom: 14,
+    paddingTop: Platform.OS === 'ios' ? 28 : 32,
+    paddingBottom: 16,
     paddingHorizontal: 18,
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
-  backBtn:    { padding: 4, marginRight: 10 },
+  backBtn:    { padding: 4, marginRight: 10, paddingBottom: 4 },
   headerMid:  { flex: 1 },
-  headerTitle:{ fontSize: 16, fontWeight: '700', color: '#111827', letterSpacing: -0.2 },
-  headerCounter:{ fontSize: 12, color: '#9ca3af', marginTop: 1 },
-  headerRight:{ paddingLeft: 10 },
+  headerTitle:{ fontSize: 22, fontWeight: '700', color: '#111827', letterSpacing: -0.3 },
+  headerCounter:{ fontSize: 12, color: '#9ca3af', marginTop: 2 },
+  headerRight:{ paddingLeft: 10, paddingBottom: 4 },
 
   // Progreso
   progressWrap:{ paddingHorizontal: 0 },
@@ -588,10 +601,12 @@ const st = StyleSheet.create({
     gap: 10,
     marginBottom: 16,
     justifyContent: 'center',
+    alignItems: 'center',
+    alignContent: 'center',
   },
   numeroBtn: {
-    width: '45%',
-    aspectRatio: 1.6,
+    width: '38%',
+    aspectRatio: 1.8,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 18,
@@ -604,7 +619,7 @@ const st = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
-  numeroText:  { fontSize: 26, fontWeight: '800', color: '#111827' },
+  numeroText:  { fontSize: 26, fontWeight: '800', color: '#111827', textAlign: 'center' },
   numeroBadge: {
     position: 'absolute',
     top: 6,
@@ -676,8 +691,8 @@ const st = StyleSheet.create({
     right: 0,
     backgroundColor: '#ffffff',
     paddingHorizontal: 18,
-    paddingTop: 14,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 18,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === 'ios' ? 105 : 97,
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6',
   },

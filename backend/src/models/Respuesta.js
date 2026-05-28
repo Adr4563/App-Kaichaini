@@ -17,12 +17,12 @@ class Respuesta {
 
   toJSON() {
     return {
-      id:           this.id,
-      idEstudiante: this.idEstudiante,
-      idEjercicio:  this.idEjercicio,
-      respuesta:    this.respuesta,
-      esCorrecta:   this.esCorrecta,
-      fecha:        this.fecha,
+      id:              this.id,
+      idEstudiante:    this.idEstudiante,
+      idEjercicio:     this.idEjercicio,
+      respuesta:       this.respuesta,
+      esCorrecta:      this.esCorrecta,
+      fechaRespuesta:  this.fecha,
     };
   }
 }

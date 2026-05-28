@@ -18,6 +18,7 @@ class EjercicioService {
       tipo: data.tipo || 'seleccion_multiple',
       enunciado: data.enunciado,
       respuestaCorrecta: data.respuestaCorrecta,
+      opciones: data.opciones || '[]',
     };
 
     const ejercicio = new Ejercicio(ejercicioData);
@@ -32,15 +33,28 @@ class EjercicioService {
     // Obtener ejercicios del módulo con estado de respuesta del estudiante
     const ejercicios = await this.ejercicioRepository.findByModulo(idModulo);
 
+    // Una sola consulta para todas las respuestas del estudiante en este módulo
+    const todasRespuestas = await this.respuestaRepository.findByEstudianteModulo(
+      idEstudiante,
+      idModulo
+    );
+
+    // Tipos soportados por el frontend
+    const TIPOS_SOPORTADOS = ['seleccion_multiple', 'clic_numero'];
+
     const resultado = [];
     for (const ej of ejercicios) {
-      // Buscar si el estudiante ya respondió este ejercicio
-      const respuestas = await this.respuestaRepository.findByEstudianteModulo(
-        idEstudiante,
-        idModulo
-      );
+      // Saltar ejercicios sin opciones o de tipo no soportado
+      let opcs = [];
+      try {
+        opcs = Array.isArray(ej.opciones)
+          ? ej.opciones
+          : JSON.parse(ej.opciones || '[]');
+      } catch { /* deja opcs = [] */ }
 
-      const respuestaEstudiante = respuestas.find(r => r.idEjercicio === ej.id);
+      if (!TIPOS_SOPORTADOS.includes(ej.tipo) || opcs.length === 0) continue;
+
+      const respuestaEstudiante = todasRespuestas.find(r => r.idEjercicio === ej.id);
 
       resultado.push({
         ...ej.toJSON(),

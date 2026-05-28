@@ -9,10 +9,9 @@ class EstudianteRepository {
     const pool = this.database.getPool();
     const query = `
       INSERT INTO USUARIO (
-        id, nombre, correo, contrasena, rol, avatar, "idLiga",
-        "colorTema", colegio, "intentosFallidos"
+        id, nombre, correo, contrasena, rol, avatar, "idLiga", colegio
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
 
@@ -25,9 +24,7 @@ class EstudianteRepository {
         'Estudiante',
         estudiante.avatar || null,
         estudiante.idLiga || null,
-        estudiante.colorTema || 'light',
         estudiante.colegio || null,
-        estudiante.intentosFallidos || 0,
       ]);
       return new Estudiante(rows[0]);
     } catch (error) {
@@ -95,10 +92,6 @@ class EstudianteRepository {
       fields.push(`"idLiga" = $${paramCount++}`);
       values.push(estudianteData.idLiga || null);
     }
-    if (estudianteData.colorTema !== undefined) {
-      fields.push(`"colorTema" = $${paramCount++}`);
-      values.push(estudianteData.colorTema);
-    }
     if (estudianteData.colegio !== undefined) {
       fields.push(`colegio = $${paramCount++}`);
       values.push(estudianteData.colegio || null);
@@ -106,14 +99,6 @@ class EstudianteRepository {
     if (estudianteData.contrasena !== undefined) {
       fields.push(`contrasena = $${paramCount++}`);
       values.push(estudianteData.contrasena);
-    }
-    if (estudianteData.intentosFallidos !== undefined) {
-      fields.push(`"intentosFallidos" = $${paramCount++}`);
-      values.push(estudianteData.intentosFallidos);
-    }
-    if (estudianteData.bloqueadoHasta !== undefined) {
-      fields.push(`"bloqueadoHasta" = $${paramCount++}`);
-      values.push(estudianteData.bloqueadoHasta || null);
     }
     if (estudianteData.resetPasswordToken !== undefined) {
       fields.push(`"resetPasswordToken" = $${paramCount++}`);

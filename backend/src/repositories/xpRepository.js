@@ -63,22 +63,25 @@ class XPRepository {
 
     // Esta consulta suma el XP ganado en respuestas correctas en una clase
     // XP se otorga basado en el tipo de ejercicio
+    // Solo la PRIMERA respuesta correcta por ejercicio (los reintentos no suman)
     const query = `
       SELECT COALESCE(SUM(
         CASE
-          WHEN e.tipo = 'seleccion_multiple' THEN 10
-          WHEN e.tipo = 'clic_numero' THEN 10
-          WHEN e.tipo = 'banco_palabras' THEN 15
-          WHEN e.tipo = 'drag_drop' THEN 15
+          WHEN tipo = 'seleccion_multiple' THEN 10
+          WHEN tipo = 'clic_numero'        THEN 10
           ELSE 0
         END
-      ), 0) as "totalXP"
-      FROM respuesta r
-      JOIN ejercicio e ON r.idejercicio = e.id
-      JOIN modulo m ON e.idmodulo = m.id
-      WHERE r.idestudiante = $1
-      AND m.idclase = $2
-      AND r.escorrecta = true
+      ), 0) AS "totalXP"
+      FROM (
+        SELECT DISTINCT ON (r.idejercicio) r.idejercicio, e.tipo
+        FROM respuesta r
+        JOIN ejercicio e ON e.id = r.idejercicio
+        JOIN modulo   m ON m.id = e.idmodulo
+        WHERE r.idestudiante = $1
+          AND m.idclase      = $2
+          AND r.escorrecta   = true
+        ORDER BY r.idejercicio, r.fecha ASC
+      ) primeras_correctas
     `;
 
     try {

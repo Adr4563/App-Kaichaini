@@ -45,9 +45,16 @@ export default function ProgresoScreen() {
     }, []),
   );
 
-  /* ── estadísticas generales ─────────────────────────────────────────── */
-  const total      = historial.length;
-  const correctas  = historial.filter(r => r.esCorrecta).length;
+  /* ── estadísticas generales (por ejercicio único, no por intento) ──── */
+  const ejerciciosMap = new Map(); // idEjercicio -> alguna vez correcto
+  for (const r of historial) {
+    const eid = r.idEjercicio || r.ejercicio?.id;
+    if (!eid) continue;
+    if (!ejerciciosMap.has(eid)) ejerciciosMap.set(eid, false);
+    if (r.esCorrecta) ejerciciosMap.set(eid, true);
+  }
+  const total      = ejerciciosMap.size;
+  const correctas  = [...ejerciciosMap.values()].filter(Boolean).length;
   const errores    = total - correctas;
   const porcentaje = total > 0 ? Math.round((correctas / total) * 100) : 0;
 
@@ -66,7 +73,7 @@ export default function ProgresoScreen() {
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <View style={{
         height: 80, paddingHorizontal: 16, paddingTop: 24,
-        justifyContent: 'center',
+        flexDirection: 'row', alignItems: 'center',
         borderBottomWidth: 1, borderBottomColor: '#eaeaea',
       }}>
         <Text style={{ fontSize: 18, fontWeight: '700', color: '#1a1a1a' }}>
@@ -129,7 +136,7 @@ export default function ProgresoScreen() {
 
         {historial.length === 0 ? (
           <View style={{ alignItems: 'center', paddingVertical: 60 }}>
-            <Text style={{ fontSize: 48, marginBottom: 15 }}>📝</Text>
+            <Feather name="file-text" size={48} color="#d1d5db" style={{ marginBottom: 15 }} />
             <Text style={{ fontSize: 16, fontWeight: '700', color: '#1a1a1a', marginBottom: 8 }}>
               Sin historial aun
             </Text>
@@ -288,9 +295,11 @@ export default function ProgresoScreen() {
                 padding: 14, borderRadius: 10,
                 backgroundColor: seleccionado?.esCorrecta ? '#e8f5e9' : '#fff3e0',
               }}>
-                <Text style={{ fontSize: 16 }}>
-                  {seleccionado?.esCorrecta ? '🎉' : '📖'}
-                </Text>
+                <Feather
+                  name={seleccionado?.esCorrecta ? 'check-circle' : 'book-open'}
+                  size={18}
+                  color={seleccionado?.esCorrecta ? '#16a34a' : '#f59e0b'}
+                />
                 <Text style={{ fontSize: 13, color: '#444', flex: 1, lineHeight: 20 }}>
                   {seleccionado?.esCorrecta
                     ? '¡Excelente! Respuesta correcta. Sigue asi.'

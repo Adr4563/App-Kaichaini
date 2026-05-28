@@ -53,7 +53,6 @@ pnpm-lock.yaml
 nativewind-env.d.ts
 
 # Extras
-.claude
 BACKEND_STATUS.md
 ESTRUCTURA_ESQUELETO.md
 GUIA_BACKEND.md

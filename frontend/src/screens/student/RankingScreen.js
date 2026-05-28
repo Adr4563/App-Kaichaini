@@ -23,36 +23,22 @@ const LIGA_NEXT = {
 };
 
 export default function RankingScreen() {
-  const [perfil,     setPerfil]     = useState(null);
-  const [ligas,      setLigas]      = useState([]);
-  const [xpDinamico, setXpDinamico] = useState(0);
-  const [cargando,   setCargando]   = useState(true);
+  const [perfil,   setPerfil]   = useState(null);
+  const [ligas,    setLigas]    = useState([]);
+  const [xpTotal,  setXpTotal]  = useState(0);
+  const [cargando, setCargando] = useState(true);
 
   const cargar = async () => {
     setCargando(true);
     try {
-      const [{ data: p }, { data: l }, { data: cls }] = await Promise.all([
-        api.get('/perfil'),
-        api.get('/ligas'),
-        api.get('/clases/mis-clases'),
+      const [{ data: p }, { data: l }, { data: xp }] = await Promise.all([
+        api.get('/perfil'),   // usuario + liga actual
+        api.get('/ligas'),    // lista de todas las ligas con umbrales del DB
+        api.get('/xp'),       // XP total desde la tabla XP (fuente única)
       ]);
       setPerfil(p.data);
       setLigas(l.data || []);
-
-      // Calcular XP total dinámicamente sumando todas las clases
-      // (misma fuente que MapaScreen - tabla de respuestas correctas)
-      const clases = cls.data || [];
-      if (clases.length > 0) {
-        const resultados = await Promise.all(
-          clases.map(c =>
-            api.get(`/xp/clase/${c.id}`).catch(() => ({ data: { data: { xpTotal: 0 } } }))
-          )
-        );
-        const totalDinamico = resultados.reduce(
-          (sum, r) => sum + (r.data?.data?.xpTotal ?? 0), 0
-        );
-        setXpDinamico(totalDinamico);
-      }
+      setXpTotal(xp.data?.xpTotal ?? 0);
     } catch (_) {
     } finally {
       setCargando(false);
@@ -69,10 +55,7 @@ export default function RankingScreen() {
     );
   }
 
-  // Usar XP dinámico (suma de clases) como fuente principal
-  // Fallback a xpTotal de la tabla XP si el dinámico es 0
-  const xpTablaBD      = perfil?.estadisticas?.xpTotal ?? 0;
-  const xpTotal        = xpDinamico > 0 ? xpDinamico : xpTablaBD;
+  // xpTotal viene de GET /xp (tabla XP — fuente única de verdad)
   const ligaActual      = perfil?.estadisticas?.liga;
   const nombre          = ligaActual?.nombre ?? 'Amauta';
   const min             = ligaActual?.umbralMinimo ?? 0;

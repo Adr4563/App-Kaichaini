@@ -5,7 +5,7 @@ class RespuestaController {
 
   async responder(req, res, next) {
     try {
-      const { idEjercicio, respuesta } = req.body;
+      const { idEjercicio, respuesta, reintentar = false } = req.body;
       const idEstudiante = req.user.id;
 
       if (!idEjercicio || !respuesta) {
@@ -18,7 +18,8 @@ class RespuestaController {
       const resultado = await this.respuestaService.responder(
         idEstudiante,
         idEjercicio,
-        respuesta
+        respuesta,
+        reintentar
       );
 
       res.status(200).json({

@@ -85,10 +85,28 @@ class RespuestaRepository {
     }
   }
 
-  async contarCorrectasPorModulo(idEstudiante, idModulo) {
+  async yaRespondioCorrectamente(idEstudiante, idEjercicio) {
     const pool = this.database.getPool();
     const query = `
       SELECT COUNT(*) AS count
+      FROM respuesta
+      WHERE idestudiante = $1
+        AND idejercicio  = $2
+        AND escorrecta   = true
+    `;
+    try {
+      const { rows } = await pool.query(query, [idEstudiante, idEjercicio]);
+      return parseInt(rows[0].count) > 0;
+    } catch (error) {
+      throw new Error(`Error al verificar respuesta previa: ${error.message}`);
+    }
+  }
+
+  async contarCorrectasPorModulo(idEstudiante, idModulo) {
+    // Cuenta ejercicios DISTINTOS respondidos correctamente al menos una vez
+    const pool = this.database.getPool();
+    const query = `
+      SELECT COUNT(DISTINCT r.idejercicio) AS count
       FROM respuesta r
       JOIN ejercicio e ON e.id = r.idejercicio
       WHERE r.idestudiante = $1

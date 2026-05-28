@@ -12,13 +12,10 @@ class Estudiante {
     this.fechaRegistro = data.fechaRegistro || new Date();
 
     // Campos específicos de Estudiante
-    this.colorTema = data.colorTema || 'light';
     this.idLiga = data.idLiga || null;
     this.colegio = data.colegio || null;
 
     // Campos de seguridad
-    this.intentosFallidos = data.intentosFallidos || 0;
-    this.bloqueadoHasta = data.bloqueadoHasta || null;
     this.resetPasswordToken = data.resetPasswordToken || null;
     this.resetPasswordExpires = data.resetPasswordExpires || null;
   }

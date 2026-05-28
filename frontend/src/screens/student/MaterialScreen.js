@@ -216,7 +216,7 @@ export default function MaterialScreen({ navigation }) {
                   borderColor:     tabActivo === i ? '#1a1a1a' : '#e0e0e0',
                 }}
               >
-                <Text style={{ fontSize: 14 }}>📖</Text>
+                <Feather name="book-open" size={14} color={tabActivo === i ? '#fff' : '#666'} />
                 <Text style={{
                   fontSize: 13, fontWeight: '600',
                   color: tabActivo === i ? '#fff' : '#666',
@@ -259,7 +259,7 @@ export default function MaterialScreen({ navigation }) {
           /* ── Resultados de búsqueda: exactas primero, parciales después ── */
           exactos.length === 0 && parciales.length === 0 ? (
             <View style={{ alignItems: 'center', paddingVertical: 50 }}>
-              <Text style={{ fontSize: 36, marginBottom: 12 }}>🔍</Text>
+              <Feather name="search" size={40} color="#d1d5db" style={{ marginBottom: 12 }} />
               <Text style={{ fontSize: 15, fontWeight: '700', color: '#1a1a1a', marginBottom: 6 }}>
                 Sin resultados
               </Text>
@@ -288,7 +288,7 @@ export default function MaterialScreen({ navigation }) {
           /* ── Lista completa sin búsqueda ─────────────────────────────── */
           material.length === 0 ? (
             <View style={{ alignItems: 'center', paddingVertical: 60 }}>
-              <Text style={{ fontSize: 48, marginBottom: 15 }}>📭</Text>
+              <Feather name="inbox" size={48} color="#d1d5db" style={{ marginBottom: 15 }} />
               <Text style={{ fontSize: 16, fontWeight: '700', color: '#1a1a1a', marginBottom: 8 }}>
                 Sin material aún
               </Text>

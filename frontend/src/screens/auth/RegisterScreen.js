@@ -3,6 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import api from '../../services/api';
 import { s, C } from '../../styles/screens/RegisterScreen.styles';
 
@@ -26,14 +27,15 @@ function ReqRow({ ok, label, last }) {
 export default function RegisterScreen({ navigation, route }) {
   const { claseInfo, codigo } = route.params;
 
-  const [nombre,     setNombre]     = useState('');
-  const [correo,     setCorreo]     = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [colegio,    setColegio]    = useState('');
-  const [terminos,   setTerminos]   = useState(false);
-  const [cargando,   setCargando]   = useState(false);
-  const [error,      setError]      = useState('');
-  const [emailEnUso, setEmailEnUso] = useState(false);
+  const [nombre,          setNombre]          = useState('');
+  const [correo,          setCorreo]          = useState('');
+  const [contrasena,      setContrasena]      = useState('');
+  const [colegio,         setColegio]         = useState('');
+  const [terminos,        setTerminos]        = useState(false);
+  const [cargando,        setCargando]        = useState(false);
+  const [error,           setError]           = useState('');
+  const [emailEnUso,      setEmailEnUso]      = useState(false);
+  const [mostrarPassword, setMostrarPassword] = useState(false);
 
   const correoValido  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
   const nombreValido  = nombre.trim().length >= 2;
@@ -128,13 +130,22 @@ export default function RegisterScreen({ navigation, route }) {
         {/* Contraseña */}
         <View style={[s.formGroup, { marginBottom: showPolicy ? 5 : 20 }]}>
           <Text style={s.label}>Contraseña</Text>
-          <TextInput
-            style={s.input}
-            value={contrasena}
-            onChangeText={setContrasena}
-            secureTextEntry
-            autoCapitalize="none"
-          />
+          <View style={s.inputWrapper}>
+            <TextInput
+              style={s.input}
+              value={contrasena}
+              onChangeText={setContrasena}
+              secureTextEntry={!mostrarPassword}
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              onPress={() => setMostrarPassword(v => !v)}
+              style={{ position: 'absolute', right: 14 }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Feather name={mostrarPassword ? 'eye-off' : 'eye'} size={18} color="#999" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Requisitos */}

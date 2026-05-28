@@ -64,11 +64,11 @@ export default function MiColeccionScreen({ navigation }) {
       </View>
 
       {/* Filtros */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filtros}>
+      <View style={s.filtros}>
         {[
-          { key: 'todas',           label: `Todas · ${todas.length}` },
-          { key: 'obtenidas',       label: `Obtenidas · ${ganadas.length}` },
-          { key: 'por_desbloquear', label: `Por desbloquear · ${todas.length - ganadas.length}` },
+          { key: 'todas',           label: 'Todas',          count: todas.length },
+          { key: 'obtenidas',       label: 'Obtenidas',      count: ganadas.length },
+          { key: 'por_desbloquear', label: 'Por desbloquear', count: todas.length - ganadas.length },
         ].map(f => (
           <TouchableOpacity
             key={f.key}
@@ -78,9 +78,14 @@ export default function MiColeccionScreen({ navigation }) {
             <Text style={[s.filtroBtnText, filtro === f.key && s.filtroBtnTextActivo]}>
               {f.label}
             </Text>
+            <View style={[s.filtroBadge, filtro === f.key && s.filtroBadgeActivo]}>
+              <Text style={[s.filtroBadgeText, filtro === f.key && s.filtroBadgeTextActivo]}>
+                {f.count}
+              </Text>
+            </View>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </View>
 
       {/* Grid de insignias */}
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
@@ -140,11 +145,15 @@ const s = StyleSheet.create({
   header:              { paddingTop: 56, paddingHorizontal: 20, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#e5e5e5', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerTitle:         { fontSize: 20, fontWeight: '700', color: '#111' },
   contador:            { fontSize: 14, color: '#8e8e93', fontWeight: '500' },
-  filtros:             { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
-  filtroBtn:           { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1, borderColor: '#e5e5e5' },
+  filtros:             { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  filtroBtn:           { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 9, borderRadius: 12, borderWidth: 1.5, borderColor: '#e5e5e5', backgroundColor: '#fafafa' },
   filtroBtnActivo:     { backgroundColor: '#1a1a1a', borderColor: '#1a1a1a' },
-  filtroBtnText:       { fontSize: 13, fontWeight: '600', color: '#666' },
+  filtroBtnText:       { fontSize: 12, fontWeight: '700', color: '#666' },
   filtroBtnTextActivo: { color: '#fff' },
+  filtroBadge:         { backgroundColor: '#ebebeb', borderRadius: 8, paddingHorizontal: 5, paddingVertical: 1 },
+  filtroBadgeActivo:   { backgroundColor: 'rgba(255,255,255,0.2)' },
+  filtroBadgeText:     { fontSize: 11, fontWeight: '700', color: '#888' },
+  filtroBadgeTextActivo: { color: '#fff' },
   grid:                { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   badge:               { width: '30%', borderRadius: 16, padding: 10, alignItems: 'center', minHeight: 135, justifyContent: 'space-between' },
   badgeGanado:         { borderWidth: 2, borderColor: '#111', backgroundColor: '#fff' },

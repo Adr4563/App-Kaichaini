@@ -10,11 +10,11 @@ import LogoutModal from '../../components/LogoutModal';
 import api from '../../services/api';
 import { getBadgePng } from '../../utils/badgeImages';
 
-const LIGA_NEXT = {
-  Amauta: { next: 'Panaca', threshold: 500  },
-  Panaca: { next: 'Auqui',  threshold: 1000 },
-  Auqui:  { next: 'Inca',   threshold: 2000 },
-  Inca:   { next: null,     threshold: null  },
+const LIGA_NEXT_NOMBRE = {
+  Amauta: 'Panaca',
+  Panaca: 'Auqui',
+  Auqui:  'Inca',
+  Inca:   null,
 };
 
 export default function PerfilScreen({ navigation }) {
@@ -22,20 +22,23 @@ export default function PerfilScreen({ navigation }) {
   const [perfil,     setPerfil]     = useState(null);
   const [todasInsig, setTodasInsig] = useState([]);
   const [clases,     setClases]     = useState([]);
+  const [xpTotal,    setXpTotal]    = useState(0);
   const [cargando,   setCargando]   = useState(true);
   const [showConfig, setShowConfig] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
 
   const cargar = async () => {
     try {
-      const [{ data: p }, { data: ins }, { data: cls }] = await Promise.all([
-        api.get('/perfil'),
-        api.get('/insignias'),
+      const [{ data: p }, { data: ins }, { data: cls }, { data: xp }] = await Promise.all([
+        api.get('/perfil'),       // usuario + liga + insignias ganadas
+        api.get('/insignias'),    // todas las insignias disponibles
         api.get('/clases/mis-clases'),
+        api.get('/xp'),           // XP total desde la tabla XP (fuente única)
       ]);
       setPerfil(p.data);
       setTodasInsig(ins.data || []);
       setClases(cls.data || []);
+      setXpTotal(xp.data?.xpTotal ?? 0);
     } catch (_) {
     } finally {
       setCargando(false);
@@ -46,16 +49,17 @@ export default function PerfilScreen({ navigation }) {
 
   const nombre      = perfil?.usuario?.nombre || usuario?.nombre || '';
   const avatarUri   = perfil?.usuario?.avatar || usuario?.avatar;
-  const xpTotal     = perfil?.estadisticas?.xpTotal ?? 0;
-  const ligaNombre  = perfil?.estadisticas?.liga?.nombre ?? 'Amauta';
+  const ligaData    = perfil?.estadisticas?.liga;
+  const ligaNombre  = ligaData?.nombre ?? 'Amauta';
+  const ligaMin     = ligaData?.umbralMinimo ?? 0;
+  const ligaMax     = ligaData?.umbralMaximo ?? 499;
   const ganadas     = perfil?.estadisticas?.insignias ?? [];
   const claseActual = clases[0];
 
-  const initials = nombre.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('');
-
-  const { next: nextNombre, threshold: nextThreshold } = LIGA_NEXT[ligaNombre] || LIGA_NEXT.Amauta;
-  const progress  = nextThreshold ? Math.min(xpTotal / nextThreshold, 1) : 1;
-  const remaining = nextThreshold ? Math.max(nextThreshold - xpTotal, 0) : 0;
+  const initials   = nombre.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('');
+  const nextNombre = LIGA_NEXT_NOMBRE[ligaNombre] ?? null;
+  const progress   = ligaMax > ligaMin ? Math.min((xpTotal - ligaMin) / (ligaMax - ligaMin), 1) : 1;
+  const remaining  = ligaMax > ligaMin ? Math.max(ligaMax - xpTotal + 1, 0) : 0;
 
   const ganadosIds = new Set(ganadas.map(i => i.id));
 
@@ -108,7 +112,7 @@ export default function PerfilScreen({ navigation }) {
           <View style={s.xpRow}>
             <Text style={s.xpLabel}>XP total</Text>
             <Text style={s.xpValue}>
-              {nextThreshold ? `${xpTotal} / ${nextThreshold} XP` : `${xpTotal} XP`}
+              {nextNombre ? `${xpTotal} / ${ligaMax} XP` : `${xpTotal} XP`}
             </Text>
           </View>
           <View style={s.progressBg}>

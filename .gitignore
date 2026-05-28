@@ -46,13 +46,3 @@ lerna-debug.log*
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
-
-
-# Extras
-.claude
-BACKEND_STATUS.md
-ESTRUCTURA_ESQUELETO.md
-GUIA_BACKEND.md
-IMPLEMENTATION_SUMMARY.md
-AGENTS.md
-REPORTE_JEANFRANCO.md

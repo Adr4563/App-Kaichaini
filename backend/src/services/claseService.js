@@ -13,6 +13,13 @@ class ClaseService {
       throw new Error('Datos incompletos para crear clase');
     }
 
+    // Validar que el código tiene exactamente 6 caracteres
+    const codigo = data.codigoUnico.trim().toUpperCase();
+    if (codigo.length !== 6) {
+      throw new Error('El código de clase debe tener exactamente 6 caracteres');
+    }
+    data.codigoUnico = codigo;
+
     // Verificar que el código único no existe
     const existingClase = await this.claseRepository.findByCodigoUnico(data.codigoUnico);
     if (existingClase) {

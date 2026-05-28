@@ -5,7 +5,6 @@ class Clase {
     this.codigoUnico = data.codigoUnico || '';
     this.curso = data.curso || '';
     this.idDocente = data.idDocente || null;
-    this.fechaCreacion = data.fechaCreacion || new Date();
   }
 
   isValid() {
@@ -19,7 +18,6 @@ class Clase {
       codigoUnico: this.codigoUnico,
       curso: this.curso,
       idDocente: this.idDocente,
-      fechaCreacion: this.fechaCreacion,
     };
   }
 }

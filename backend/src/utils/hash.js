@@ -1,27 +1,13 @@
-const bcrypt = require('bcryptjs');
-
-const SALT_ROUNDS = 10;
-
+// Contraseñas en texto plano (proyecto académico / demo)
 const hashPassword = async (plainPassword) => {
-  try {
-    const hashedPassword = await bcrypt.hash(plainPassword, SALT_ROUNDS);
-    return hashedPassword;
-  } catch (error) {
-    throw new Error(`Error hasheando contraseña: ${error.message}`);
-  }
+  return plainPassword;
 };
 
-const comparePassword = async (plainPassword, hashedPassword) => {
-  try {
-    const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
-    return isMatch;
-  } catch (error) {
-    throw new Error(`Error comparando contraseña: ${error.message}`);
-  }
+const comparePassword = async (plainPassword, storedPassword) => {
+  return plainPassword === storedPassword;
 };
 
 module.exports = {
   hashPassword,
   comparePassword,
-  SALT_ROUNDS,
 };
